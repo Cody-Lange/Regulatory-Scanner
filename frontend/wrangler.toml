@@ -1,10 +1,8 @@
-# This file is not needed for Cloudflare Pages deployment
-# Keeping for reference only
-# name = "sentinel-scan"
-# compatibility_date = "2024-01-01"
+name = "sentinel-scan"
+compatibility_date = "2024-01-01"
 
-# [site]
-# bucket = "./dist"
+[assets]
+directory = "./dist"
 
-# [build]
-# command = "npm run build"
+[build]
+command = "npm run build"
