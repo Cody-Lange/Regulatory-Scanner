@@ -67,8 +67,24 @@ frontend/
 
 ## Deployment
 
-The site can be deployed to any static hosting platform:
+### Cloudflare Pages (Recommended)
 
+The site is configured for deployment to Cloudflare Pages at **sentinelscan.app**.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed Cloudflare Pages deployment instructions.
+
+**Quick Deploy:**
+1. Connect your GitHub repo to Cloudflare Pages
+2. Set root directory to `frontend`
+3. Build command: `npm run build`
+4. Output directory: `dist`
+5. Configure custom domain: `sentinelscan.app`
+
+**Live Site:** https://sentinelscan.app
+
+### Alternative Platforms
+
+The site can also be deployed to:
 - **Vercel:** `npx vercel`
 - **Netlify:** Drag and drop the `dist/` folder
 - **GitHub Pages:** Use the build output from `npm run build`
