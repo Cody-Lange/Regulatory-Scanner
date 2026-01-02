@@ -1,4 +1,4 @@
-# GORILLA GATE - PROJECT BRIEF
+# SENTINEL SCAN - PROJECT BRIEF
 **Last Updated:** January 2, 2026  
 **Version:** 2.0 (Strategic Revision)  
 **Status:** Pre-Launch / MVP Development
@@ -20,7 +20,7 @@ This document has been revised based on comprehensive strategic review. Key chan
 
 ## EXECUTIVE SUMMARY
 
-**Company Name:** Gorilla Gate  
+**Company Name:** Sentinel Scan  
 **Tagline:** Catch Data Privacy Violations Before They Cost Millions  
 **Product:** Developer-native compliance scanning for LLM applications
 
@@ -370,7 +370,7 @@ This document has been revised based on comprehensive strategic review. Key chan
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    GORILLA GATE SYSTEM                          │
+│                    SENTINEL SCAN SYSTEM                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌──────────────────┐                    ┌──────────────────┐  │
@@ -567,7 +567,7 @@ This document has been revised based on comprehensive strategic review. Key chan
 - [ ] What features would make this a "must have" vs. "nice to have"?
 
 ### Must Answer Before First Customer
-- [ ] What's our response when a customer using Gorilla Gate gets fined anyway?
+- [ ] What's our response when a customer using Sentinel Scan gets fined anyway?
 - [ ] Do we need E&O insurance from Day 1?
 - [ ] What's the minimum viable audit trail format?
 
@@ -649,7 +649,7 @@ This document has been revised based on comprehensive strategic review. Key chan
 ## CONTACT & STATUS
 
 **Founder:** Cody Lange  
-**Email:** cody@gorillagate.io  
+**Email:** cody@sentinelscan.io  
 **Status:** Pre-validation, preparing for discovery calls
 
 ---

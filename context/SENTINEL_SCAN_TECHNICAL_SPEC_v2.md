@@ -1,4 +1,4 @@
-# GORILLA GATE - TECHNICAL SPECIFICATION v2.0
+# SENTINEL SCAN - TECHNICAL SPECIFICATION v2.0
 **Last Updated:** January 2, 2026  
 **Status:** MVP Specification  
 **Target Completion:** Week 5, January 2026
@@ -48,7 +48,7 @@ Static code analysis tool detecting data privacy violations in Python LLM applic
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│                      GORILLA GATE                              │
+│                      SENTINEL SCAN                             │
 ├────────────────────────────────────────────────────────────────┤
 │                                                                │
 │  ┌──────────────────┐              ┌──────────────────┐       │
@@ -108,16 +108,16 @@ Regulation: GDPR Article 6, CCPA §1798.100
 
 **3. Quick Fixes**
 - "Add to allowlist"
-- "Ignore this line" (`# gorilla-gate: ignore`)
+- "Ignore this line" (`# sentinel-scan: ignore`)
 - "Ignore this violation type"
 
 **4. Status Bar**
-- `Gorilla Gate: ✓ Clean` or `Gorilla Gate: 3 violations`
+- `Sentinel Scan: ✓ Clean` or `Sentinel Scan: 3 violations`
 
 ### Implementation Structure
 
 ```
-gorilla-gate-vscode/
+sentinel-scan-vscode/
 ├── package.json
 ├── src/
 │   ├── extension.ts      # Activation, event handlers
@@ -131,7 +131,7 @@ gorilla-gate-vscode/
 ### Key Code: Diagnostics Provider
 
 ```typescript
-export class GorillaGateDiagnostics {
+export class SentinelScanDiagnostics {
     private diagnosticCollection: vscode.DiagnosticCollection;
     private debounceTimers: Map<string, NodeJS.Timeout> = new Map();
     
@@ -144,7 +144,7 @@ export class GorillaGateDiagnostics {
                 `${v.type}: ${v.message}`,
                 this.severityToVscode(v.severity)
             );
-            diagnostic.source = 'Gorilla Gate';
+            diagnostic.source = 'Sentinel Scan';
             return diagnostic;
         });
         
@@ -165,10 +165,10 @@ export class GorillaGateDiagnostics {
 ### Commands
 
 ```bash
-gorilla-gate scan ./src                    # Scan directory
-gorilla-gate scan ./src --format json      # JSON output
-gorilla-gate scan ./src --severity high    # Filter severity
-gorilla-gate install-hook                  # Git pre-commit hook
+sentinel-scan scan ./src                    # Scan directory
+sentinel-scan scan ./src --format json      # JSON output
+sentinel-scan scan ./src --severity high    # Filter severity
+sentinel-scan install-hook                  # Git pre-commit hook
 ```
 
 ### Console Output Example
@@ -270,7 +270,7 @@ elif context.flows_to_llm_api(line, matched_text):
 ### Configuration Allowlists
 
 ```yaml
-# gorilla_gate.yaml
+# sentinel_scan.yaml
 allowlist:
   - "example.com"
   - "test@"
@@ -288,9 +288,9 @@ detectors:
 ### Inline Ignore Comments
 
 ```python
-email = "real@example.com"  # gorilla-gate: ignore
-test_email = "t@t.com"      # gorilla-gate: ignore email
-data = {"a": 1}             # gorilla-gate: ignore email,phone
+email = "real@example.com"  # sentinel-scan: ignore
+test_email = "t@t.com"      # sentinel-scan: ignore email
+data = {"a": 1}             # sentinel-scan: ignore email,phone
 ```
 
 ### File Exclusions
@@ -471,7 +471,7 @@ def test_llm_flow_critical():
 ```toml
 # pyproject.toml
 [project]
-name = "gorilla-gate"
+name = "sentinel-scan"
 version = "0.1.0"
 dependencies = [
     "typer>=0.9.0",
@@ -480,7 +480,7 @@ dependencies = [
 ]
 
 [project.scripts]
-gorilla-gate = "gorilla_gate.cli:app"
+sentinel-scan = "sentinel_scan.cli:app"
 ```
 
 ### VS Code Extension
@@ -549,10 +549,10 @@ vsce publish
 ## APPENDIX: File Structure
 
 ```
-gorilla-gate/
+sentinel-scan/
 ├── pyproject.toml
 ├── README.md
-├── gorilla_gate/
+├── sentinel_scan/
 │   ├── __init__.py
 │   ├── cli.py
 │   ├── scanner.py
@@ -574,7 +574,7 @@ gorilla-gate/
 │   ├── unit/
 │   ├── integration/
 │   └── fixtures/
-└── gorilla-gate-vscode/
+└── sentinel-scan-vscode/
     ├── package.json
     ├── src/
     └── python/

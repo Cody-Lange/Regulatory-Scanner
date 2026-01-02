@@ -1,4 +1,4 @@
-# Gorilla Gate
+# Sentinel Scan
 
 Developer-native compliance scanning tool for LLM applications. Catch data privacy violations before they cost millions.
 
@@ -25,9 +25,9 @@ npm install
 npm run dev
 ```
 
-## About Gorilla Gate
+## About Sentinel Scan
 
-Gorilla Gate is a compliance scanning tool that helps developers detect and prevent data privacy violations in LLM applications. It provides:
+Sentinel Scan is a compliance scanning tool that helps developers detect and prevent data privacy violations in LLM applications. It provides:
 
 - **Real-time scanning** with VS Code extension
 - **Pre-commit hooks** to block violations before they reach production
@@ -37,4 +37,4 @@ Gorilla Gate is a compliance scanning tool that helps developers detect and prev
 
 ## License
 
-All rights reserved © 2026 Gorilla Gate
+All rights reserved © 2026 Sentinel Scan

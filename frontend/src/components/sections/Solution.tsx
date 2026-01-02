@@ -6,7 +6,7 @@ export const Solution = () => {
       number: '01',
       icon: <Search className="w-12 h-12 text-accent-blue" />,
       title: 'Scan',
-      description: 'Install our VS Code extension or CLI tool. Gorilla Gate scans your Python code in real-time.',
+      description: 'Install our VS Code extension or CLI tool. Sentinel Scan scans your Python code in real-time.',
     },
     {
       number: '02',
@@ -31,7 +31,7 @@ export const Solution = () => {
         </h2>
 
         <p className="text-lg text-white/60 text-center mb-16 max-w-2xl mx-auto">
-          Gorilla Gate integrates into your development workflow to catch violations before they reach production.
+          Sentinel Scan integrates into your development workflow to catch violations before they reach production.
         </p>
 
         <div className="relative">
