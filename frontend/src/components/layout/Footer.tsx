@@ -49,7 +49,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-white/40 text-sm">
-            © 2026 Gorilla Gate. All rights reserved.
+            © 2026 Sentinel Scan. All rights reserved.
           </p>
 
           {/* Social Links */}

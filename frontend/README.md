@@ -1,6 +1,6 @@
-# Gorilla Gate Landing Page
+# Sentinel Scan Landing Page
 
-Modern, single-page React landing page for Gorilla Gate - a developer-native compliance scanning tool for LLM applications.
+Modern, single-page React landing page for Sentinel Scan - a developer-native compliance scanning tool for LLM applications.
 
 ## Tech Stack
 

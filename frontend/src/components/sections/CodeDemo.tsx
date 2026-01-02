@@ -38,7 +38,7 @@ export const CodeDemo = () => {
         </h2>
 
         <p className="text-lg text-white/60 text-center mb-12 max-w-2xl mx-auto">
-          Gorilla Gate analyzes your code and highlights violations in real-time.
+          Sentinel Scan analyzes your code and highlights violations in real-time.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -52,7 +52,7 @@ export const CodeDemo = () => {
             <div className="glass-card p-6 h-full">
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-3 h-3 rounded-full bg-accent-green" />
-                <h3 className="text-lg font-semibold">Gorilla Gate: 4 violations found</h3>
+                <h3 className="text-lg font-semibold">Sentinel Scan: 4 violations found</h3>
               </div>
 
               <div className="space-y-3">

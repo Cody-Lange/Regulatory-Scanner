@@ -4,7 +4,7 @@ import { CodeBlock } from '../ui/CodeBlock';
 
 export const Hero = () => {
   const codeLines = [
-    { content: '# analytics.py - Gorilla Gate detecting violations' },
+    { content: '# analytics.py - Sentinel Scan detecting violations' },
     { content: '' },
     { content: 'customer_email = "john.smith@example.com"', violation: { type: 'high' as const, message: 'PII: Email' } },
     { content: 'vin_number = "1HGCM82633A004352"', violation: { type: 'high' as const, message: 'VIN detected' } },
