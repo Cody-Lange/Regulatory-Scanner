@@ -546,40 +546,129 @@ vsce publish
 
 ---
 
-## APPENDIX: File Structure
+## APPENDIX A: Complete Directory Structure
 
 ```
-sentinel-scan/
-├── pyproject.toml
-├── README.md
-├── sentinel_scan/
-│   ├── __init__.py
-│   ├── cli.py
-│   ├── scanner.py
-│   ├── config.py
-│   ├── models.py
-│   ├── detection/
-│   │   ├── __init__.py
-│   │   ├── base.py
-│   │   ├── pii_detector.py
-│   │   ├── vin_detector.py
-│   │   └── context_analyzer.py
-│   ├── rules/
-│   │   ├── __init__.py
-│   │   └── engine.py
-│   └── templates/
-│       ├── automotive.yaml
-│       └── healthcare.yaml
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── fixtures/
-└── sentinel-scan-vscode/
-    ├── package.json
+Regulatory-Scanner/
+├── README.md                           # Project overview
+├── context/                            # Documentation & planning
+│   ├── SENTINEL_SCAN_PROJECT_BRIEF_v2.md
+│   ├── SENTINEL_SCAN_TECHNICAL_SPEC_v2.md
+│   ├── CLAUDE.md                       # Development rules
+│   ├── PLAN.md                         # Development checklist
+│   └── memory-bank/                    # Session continuity
+│       ├── projectbrief.md             # One-liner about the app
+│       ├── techContext.md              # Stack + versions
+│       ├── systemPatterns.md           # Architecture approach
+│       ├── activeContext.md            # Current work
+│       └── progress.md                 # Done vs remaining
+│
+├── frontend/                           # Landing page (React/Vite)
+│   ├── src/
+│   ├── package.json
+│   └── ...
+│
+├── sentinel-scan/                      # Core Python package
+│   ├── pyproject.toml                  # Package configuration
+│   ├── README.md                       # Package documentation
+│   ├── sentinel_scan/
+│   │   ├── __init__.py                 # Package exports
+│   │   ├── cli.py                      # Typer CLI commands
+│   │   ├── scanner.py                  # Main scanner orchestrator
+│   │   ├── config.py                   # YAML config loading
+│   │   ├── models.py                   # Data models (Violation, etc.)
+│   │   ├── formatters/
+│   │   │   ├── __init__.py
+│   │   │   ├── console.py              # Rich console output
+│   │   │   ├── json_output.py          # JSON audit format
+│   │   │   └── vscode.py               # VS Code JSON format
+│   │   ├── detection/
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py                 # Detector ABC
+│   │   │   ├── registry.py             # Detector factory
+│   │   │   ├── pii_detector.py         # PII patterns
+│   │   │   ├── vin_detector.py         # VIN with checksum
+│   │   │   ├── custom_detector.py      # User-defined patterns
+│   │   │   └── context_analyzer.py     # AST-based context
+│   │   ├── rules/
+│   │   │   ├── __init__.py
+│   │   │   ├── engine.py               # Rule matching logic
+│   │   │   ├── allowlist.py            # Allowlist management
+│   │   │   └── exclusions.py           # File/path exclusions
+│   │   └── templates/
+│   │       ├── default.yaml            # Default configuration
+│   │       ├── automotive.yaml         # Automotive industry
+│   │       └── healthcare.yaml         # Healthcare (Phase 2)
+│   │
+│   └── tests/
+│       ├── conftest.py                 # pytest fixtures
+│       ├── unit/
+│       │   ├── test_models.py
+│       │   ├── test_config.py
+│       │   ├── test_pii_detector.py
+│       │   ├── test_vin_detector.py
+│       │   ├── test_context_analyzer.py
+│       │   └── test_scanner.py
+│       ├── integration/
+│       │   ├── test_cli.py
+│       │   └── test_full_scan.py
+│       └── fixtures/
+│           ├── clean_code.py           # No violations
+│           ├── pii_samples.py          # PII test cases
+│           ├── vin_samples.py          # VIN test cases
+│           └── configs/                # Test configurations
+│
+└── sentinel-scan-vscode/               # VS Code extension
+    ├── package.json                    # Extension manifest
+    ├── tsconfig.json                   # TypeScript config
     ├── src/
-    └── python/
+    │   ├── extension.ts                # Entry point
+    │   ├── diagnostics.ts              # Diagnostic provider
+    │   ├── scanner.ts                  # Python subprocess
+    │   ├── codeActions.ts              # Quick fixes
+    │   ├── hover.ts                    # Hover information
+    │   └── statusBar.ts                # Status bar item
+    ├── python/
+    │   └── scan_file.py                # Standalone scanner
+    └── test/
+        └── suite/
+            └── extension.test.ts
 ```
 
 ---
 
-*Last updated: January 2, 2026*
+## APPENDIX B: Module Responsibilities
+
+| Module | Single Responsibility |
+|--------|----------------------|
+| `cli.py` | Parse arguments, invoke scanner, format output |
+| `scanner.py` | Orchestrate detection, aggregate results |
+| `config.py` | Load, validate, merge YAML configurations |
+| `models.py` | Define data structures (Violation, ScanResult) |
+| `detection/base.py` | Define Detector interface |
+| `detection/registry.py` | Manage detector registration and instantiation |
+| `detection/pii_detector.py` | Detect PII patterns (email, phone, SSN) |
+| `detection/vin_detector.py` | Detect and validate VINs |
+| `detection/context_analyzer.py` | AST parsing, context determination |
+| `rules/engine.py` | Apply rules, filter violations |
+| `rules/allowlist.py` | Manage global and per-detector allowlists |
+| `formatters/console.py` | Rich-formatted console output |
+| `formatters/json_output.py` | Structured JSON for audit logs |
+
+---
+
+## APPENDIX C: Related Documentation
+
+| Document | Purpose | Location |
+|----------|---------|----------|
+| Project Brief | Business context, value prop, GTM | `context/SENTINEL_SCAN_PROJECT_BRIEF_v2.md` |
+| Technical Spec | This document | `context/SENTINEL_SCAN_TECHNICAL_SPEC_v2.md` |
+| Development Rules | Coding standards, TDD, approved libs | `context/CLAUDE.md` |
+| Development Plan | Phased checklist of tasks | `context/PLAN.md` |
+| System Patterns | Architecture diagrams, design patterns | `context/memory-bank/systemPatterns.md` |
+| Tech Context | Stack versions, environment | `context/memory-bank/techContext.md` |
+| Progress Tracker | What's done, what's left | `context/memory-bank/progress.md` |
+
+---
+
+*Last updated: January 4, 2026*
