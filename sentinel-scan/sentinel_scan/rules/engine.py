@@ -7,7 +7,6 @@ This module applies rules to filter and process violations:
 """
 
 import fnmatch
-import re
 from typing import Any
 
 from sentinel_scan.models import Severity, Violation

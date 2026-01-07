@@ -13,7 +13,6 @@ adjusting violation severity appropriately.
 
 import ast
 import re
-from pathlib import Path
 
 from sentinel_scan.models import ScanContext
 

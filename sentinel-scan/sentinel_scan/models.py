@@ -8,7 +8,7 @@ This module defines the core data structures used throughout the application:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import IntEnum
 from typing import Any
 
@@ -102,7 +102,7 @@ class ScanResult:
     lines_scanned: int = 0
     violations: list[Violation] = field(default_factory=list)
     scan_duration_ms: int = 0
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     config_path: str | None = None
     errors: list[str] = field(default_factory=list)
 

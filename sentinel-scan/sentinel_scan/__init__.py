@@ -3,6 +3,6 @@
 __version__ = "0.1.0"
 __author__ = "Cody Lange"
 
-from sentinel_scan.models import Severity, Violation, ScanResult
+from sentinel_scan.models import ScanResult, Severity, Violation
 
-__all__ = ["Severity", "Violation", "ScanResult", "__version__"]
+__all__ = ["ScanResult", "Severity", "Violation", "__version__"]
