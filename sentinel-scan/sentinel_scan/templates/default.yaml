@@ -1,0 +1,84 @@
+# Sentinel Scan Default Configuration
+# Documentation: https://sentinelscan.io/docs/configuration
+
+version: "1.0"
+
+settings:
+  # Minimum severity level to report (low, medium, high, critical)
+  min_severity: low
+
+  # Exit with non-zero code if violations found
+  exit_on_violation: true
+
+# Global allowlist - patterns that should never trigger violations
+# These are checked against the matched text
+allowlist:
+  - "example.com"       # Common example domain
+  - "test@"             # Test email prefix
+  - "555-0100"          # US fictional phone prefix
+  - "000-00-0000"       # Invalid SSN (all zeros)
+
+# File and path exclusions
+exclusions:
+  paths:
+    - "*/tests/*"
+    - "*/.venv/*"
+    - "*/.git/*"
+    - "*/__pycache__/*"
+    - "*/node_modules/*"
+    - "*.pyc"
+
+# Detector configurations
+detectors:
+  # PII (Personally Identifiable Information) detector
+  pii:
+    enabled: true
+    patterns:
+      email:
+        enabled: true
+        severity: high
+        regulation: "GDPR Article 6, CCPA §1798.100"
+        allowlist:
+          - "@example.com"
+          - "@test.local"
+          - "@localhost"
+
+      phone:
+        enabled: true
+        severity: high
+        regulation: "GDPR Article 6"
+        # US phone formats
+
+      ssn:
+        enabled: true
+        severity: critical
+        regulation: "CCPA, HIPAA"
+
+      credit_card:
+        enabled: true
+        severity: critical
+        regulation: "PCI-DSS"
+
+      address:
+        enabled: true
+        severity: medium
+        regulation: "GDPR Article 6"
+
+  # VIN (Vehicle Identification Number) detector
+  vin:
+    enabled: true
+    severity: critical
+    regulation: "GDPR (indirect identifier)"
+    # Validate VIN checksum to reduce false positives
+    validate_checksum: true
+
+  # Custom patterns (user-defined)
+  custom:
+    enabled: true
+    patterns: []
+    # Example custom pattern:
+    # - name: "internal_id"
+    #   pattern: 'CUST-\d{6}'
+    #   severity: "medium"
+    #   regulation: "Internal Policy"
+    #   message: "Internal customer ID detected"

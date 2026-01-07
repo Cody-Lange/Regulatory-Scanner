@@ -5,7 +5,7 @@
 ### Core Engine (Python)
 | Component | Version | Purpose |
 |-----------|---------|---------|
-| Python | 3.11+ | Runtime |
+| Python | 3.13.4 | Runtime |
 | Typer | >=0.9.0 | CLI framework |
 | PyYAML | >=6.0 | Configuration |
 | Rich | >=13.0 | Console output |
@@ -38,13 +38,13 @@
 ## Environment Requirements
 
 ### Development
-- Python 3.11 or higher
+- Python 3.13.4
 - Node.js 18 or higher
 - VS Code 1.85 or higher (for extension testing)
 - Git
 
 ### Production
-- Python 3.11+ (user's environment)
+- Python 3.13+ (user's environment)
 - VS Code 1.80+ (for extension users)
 - No external services required (all local processing)
 

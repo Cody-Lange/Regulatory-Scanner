@@ -1,0 +1,105 @@
+{
+  "name": "sentinel-scan",
+  "displayName": "Sentinel Scan",
+  "description": "Developer-native compliance scanning for LLM applications",
+  "version": "0.1.0",
+  "publisher": "sentinel-scan",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "compliance",
+    "pii",
+    "gdpr",
+    "ccpa",
+    "llm",
+    "security",
+    "privacy"
+  ],
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sentinel-scan.scan",
+        "title": "Sentinel Scan: Scan Current File"
+      },
+      {
+        "command": "sentinel-scan.scanWorkspace",
+        "title": "Sentinel Scan: Scan Workspace"
+      }
+    ],
+    "configuration": {
+      "title": "Sentinel Scan",
+      "properties": {
+        "sentinel-scan.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable Sentinel Scan"
+        },
+        "sentinel-scan.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Path to Python interpreter"
+        },
+        "sentinel-scan.configPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to configuration file (leave empty for auto-detect)"
+        },
+        "sentinel-scan.minSeverity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "default": "low",
+          "description": "Minimum severity level to show"
+        },
+        "sentinel-scan.scanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scan files on save"
+        },
+        "sentinel-scan.scanOnType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scan files as you type (with debounce)"
+        },
+        "sentinel-scan.debounceDelay": {
+          "type": "number",
+          "default": 300,
+          "description": "Delay in ms before scanning after typing"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cody-Lange/Regulatory-Scanner"
+  },
+  "license": "MIT"
+}
