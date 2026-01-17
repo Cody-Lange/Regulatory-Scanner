@@ -103,7 +103,7 @@ def load_config(config_path: Path | None = None) -> Config:
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
     with config_path.open() as f:
-        data = yaml.safe_load(f)
+        _data = yaml.safe_load(f)  # Will be used in Phase 1 for full config parsing
 
     # TODO: Implement full config parsing and validation in Phase 1
     return get_default_config()

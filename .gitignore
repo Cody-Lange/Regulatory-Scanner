@@ -2,3 +2,20 @@
 node_modules
 .DS_Store
 *.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.venv/
+venv/
+ENV/
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/

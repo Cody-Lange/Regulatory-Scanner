@@ -7,7 +7,7 @@ This module provides the CLI commands using Typer:
 """
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -34,7 +34,7 @@ def version_callback(value: bool) -> None:
 @app.callback()
 def main(
     version: Annotated[
-        Optional[bool],
+        bool | None,
         typer.Option(
             "--version",
             "-v",
@@ -67,7 +67,7 @@ def scan(
         ),
     ] = "console",
     severity: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--severity",
             "-s",
@@ -75,7 +75,7 @@ def scan(
         ),
     ] = None,
     config: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             "--config",
             "-c",

@@ -4,6 +4,7 @@ This module provides a central registry for detector classes,
 allowing dynamic registration and instantiation of detectors.
 """
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -27,7 +28,7 @@ class DetectorRegistry:
     _detectors: dict[str, type["Detector"]] = {}
 
     @classmethod
-    def register(cls, name: str):
+    def register(cls, name: str) -> Callable[[type["Detector"]], type["Detector"]]:
         """Decorator to register a detector class.
 
         Args:

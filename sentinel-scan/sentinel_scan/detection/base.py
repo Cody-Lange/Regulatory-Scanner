@@ -72,4 +72,4 @@ class Detector(ABC):
             True if enabled, False otherwise
         """
         detector_config = config.get("detectors", {}).get(self.name, {})
-        return detector_config.get("enabled", True)
+        return bool(detector_config.get("enabled", True))
