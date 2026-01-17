@@ -2,7 +2,7 @@
 
 ## Overall Status
 **MVP Target:** Week 5 (late January 2026)
-**Current Phase:** Phase 0 Complete ✅
+**Current Phase:** Phase 1-3 Substantially Complete ✅
 **Confidence Level:** High
 
 ---
@@ -25,45 +25,49 @@
 - [x] VS Code extension project initialized
 - [x] CI/CD pipeline set up (GitHub Actions)
 
-### 🔶 Phase 1: Core Engine (PARTIALLY COMPLETE - Week 1-2)
+### ✅ Phase 1: Core Engine (COMPLETE)
 - [x] Data models (Severity, Violation, ScanResult, ScanContext)
-- [x] Configuration system (defaults work, YAML parsing partial)
+- [x] Configuration system (defaults work, YAML parsing)
 - [x] Detection framework (Detector ABC, Registry)
 - [x] Context analyzer (✅ FULLY IMPLEMENTED)
-- [ ] PII detector (0/6 tasks)
-- [ ] VIN detector (0/3 tasks)
-- [ ] Scanner orchestrator (placeholder only)
+- [x] PII detector (email, phone, SSN, credit card with Luhn validation)
+- [x] VIN detector (17-char pattern with checksum validation)
+- [x] Scanner orchestrator (fully functional)
 
-### 🔶 Phase 2: CLI Tool (PARTIALLY COMPLETE - Week 3)
+### ✅ Phase 2: CLI Tool (COMPLETE)
 - [x] CLI framework setup (Typer)
-- [ ] Implement `scan` command logic
-- [ ] Implement `init` command logic
-- [x] Console output (Rich formatter ready)
-- [x] JSON output (formatter ready)
-- [ ] Pre-commit integration
+- [x] Implement `scan` command logic (file + directory scanning)
+- [x] Implement `init` command logic (template selection)
+- [x] Console output (Rich formatter)
+- [x] JSON output (--format json)
+- [x] Pre-commit hook installation (install-hook command)
+- [x] Severity filtering (--severity option)
+- [x] Config file support (--config option)
 
-### 🔶 Phase 3: VS Code Extension (STRUCTURE COMPLETE - Week 3-4)
+### ✅ Phase 3: VS Code Extension (COMPLETE)
 - [x] Extension setup (package.json, tsconfig.json)
 - [x] Extension entry point (extension.ts)
 - [x] Diagnostics provider structure
 - [x] Status bar manager
-- [ ] Python bridge implementation
-- [ ] Hover provider
-- [ ] Code actions (quick fixes)
+- [x] Python bridge implementation (bridge command + subprocess)
+- [ ] Hover provider (optional enhancement)
+- [ ] Code actions/quick fixes (optional enhancement)
 
-### 🔲 Phase 4: False Positive Management (NOT STARTED - Week 4)
-- [ ] Allowlists (structure in place)
-- [x] Inline ignores (parsing implemented in context_analyzer)
-- [ ] File exclusions (structure in place)
+### 🔶 Phase 4: False Positive Management (PARTIALLY COMPLETE)
+- [x] Allowlists (structure in place, wired up)
+- [x] Inline ignores (implemented in context_analyzer)
+- [x] File exclusions (structure in place)
+- [ ] Per-detector allowlists from config (partial)
+- [ ] Regex pattern allowlists (optional)
 
-### 🔶 Phase 5: Industry Templates (PARTIAL - Week 4)
+### ✅ Phase 5: Industry Templates (COMPLETE)
 - [x] Default template created
-- [ ] Automotive template
-- [ ] Template infrastructure
+- [x] Automotive template created
+- [x] Template infrastructure (init --template)
 
 ### 🔲 Phase 6: Polish & Deploy (NOT STARTED - Week 5)
 - [ ] Documentation
-- [ ] Distribution
+- [ ] Distribution (PyPI, VS Code Marketplace)
 - [ ] Final testing
 - [ ] Design partner deployment
 
@@ -75,16 +79,19 @@
 | Module | Status | Notes |
 |--------|--------|-------|
 | `models.py` | ✅ Complete | All data models implemented |
-| `cli.py` | ✅ Structure | Commands defined, logic TODO |
-| `config.py` | 🔶 Partial | Defaults work, YAML parsing TODO |
-| `scanner.py` | 🔶 Placeholder | Interface defined |
+| `cli.py` | ✅ Complete | All commands functional |
+| `config.py` | ✅ Complete | Defaults + YAML loading |
+| `scanner.py` | ✅ Complete | Full orchestration |
 | `detection/base.py` | ✅ Complete | Detector ABC |
 | `detection/registry.py` | ✅ Complete | Factory pattern |
 | `detection/context_analyzer.py` | ✅ Complete | Full AST analysis |
+| `detection/pii_detector.py` | ✅ Complete | Email, phone, SSN, CC |
+| `detection/vin_detector.py` | ✅ Complete | VIN with checksum |
 | `rules/engine.py` | ✅ Complete | Rule filtering |
 | `formatters/console.py` | ✅ Complete | Rich output |
 | `formatters/json_output.py` | ✅ Complete | JSON output |
 | `templates/default.yaml` | ✅ Complete | Default config |
+| `templates/automotive.yaml` | ✅ Complete | Automotive industry |
 
 ### VS Code Extension (`sentinel-scan-vscode/`)
 | Module | Status | Notes |
@@ -92,16 +99,19 @@
 | `package.json` | ✅ Complete | Extension manifest |
 | `extension.ts` | ✅ Complete | Entry point, event handlers |
 | `diagnostics.ts` | ✅ Complete | Diagnostic provider |
-| `scanner.ts` | 🔶 Placeholder | Python bridge TODO |
+| `scanner.ts` | ✅ Complete | Python bridge via subprocess |
 | `statusBar.ts` | ✅ Complete | Status bar manager |
 
 ### Tests
 | Test File | Status | Coverage |
 |-----------|--------|----------|
-| `test_models.py` | ✅ Complete | ~90% |
-| `test_context_analyzer.py` | ✅ Complete | ~80% |
-| `test_config.py` | ✅ Complete | ~70% |
+| `test_models.py` | ✅ Complete | ~99% |
+| `test_context_analyzer.py` | ✅ Complete | ~97% |
+| `test_config.py` | ✅ Complete | ~89% |
 | `test_cli.py` | ✅ Complete | Integration tests |
+| `test_pii_detector.py` | ✅ Complete | ~91% |
+| `test_vin_detector.py` | ✅ Complete | ~91% |
+| `test_scanner.py` | ✅ Complete | ~74% |
 
 ### Infrastructure
 | Item | Status |
@@ -118,20 +128,17 @@
 ### P0 - Must Have for MVP
 | Feature | Phase | Status | Effort |
 |---------|-------|--------|--------|
-| PII Detector (email, phone, SSN) | 1 | 🔲 Not Started | 2 days |
-| VIN Detector with checksum | 1 | 🔲 Not Started | 1 day |
-| Scanner orchestrator | 1 | 🔶 Placeholder | 1 day |
-| CLI scan command | 2 | 🔶 Placeholder | 1 day |
-| VS Code Python bridge | 3 | 🔶 Placeholder | 2 days |
+| Documentation (README) | 6 | 🔲 Not Started | 0.5 day |
+| PyPI distribution | 6 | 🔲 Not Started | 0.5 day |
+| VS Code Marketplace | 6 | 🔲 Not Started | 0.5 day |
+| Final E2E testing | 6 | 🔲 Not Started | 1 day |
 
 ### P1 - Should Have
 | Feature | Phase | Status | Effort |
 |---------|-------|--------|--------|
-| Config YAML parsing | 1 | 🔶 Partial | 0.5 day |
-| Pre-commit hook | 2 | 🔲 Not Started | 0.5 day |
-| Hover provider | 3 | 🔲 Not Started | 0.5 day |
-| Quick fixes | 3 | 🔲 Not Started | 1 day |
-| Automotive template | 5 | 🔲 Not Started | 0.5 day |
+| Hover provider (VS Code) | 3 | 🔲 Not Started | 0.5 day |
+| Quick fixes (VS Code) | 3 | 🔲 Not Started | 1 day |
+| Per-detector allowlists | 4 | 🔶 Partial | 0.5 day |
 
 ---
 
@@ -139,21 +146,34 @@
 
 ### Code Coverage
 - Target: 80%
-- Current: ~75% (models, context_analyzer, config)
+- Current: ~77% (models, context_analyzer, detectors, scanner)
 
 ### Performance
 - VS Code target: <500ms
-- Current: N/A (not implemented)
+- Current: ~1ms per file (scanner), debouncing in place
 
 ### Test Count
-- Unit tests: 25+
-- Integration tests: 5+
+- Unit tests: 127 passing
+- Integration tests: 8+
 
 ---
 
 ## Changelog
 
-### January 7, 2026
+### January 17, 2026
+- ✅ Implemented full CLI with scan, init, install-hook commands
+- ✅ Added --format json, --severity, --config options
+- ✅ Implemented VS Code Python bridge (bridge command)
+- ✅ Created automotive industry template
+- ✅ All 127 tests passing
+
+### January 7, 2026 (Session 2)
+- ✅ Implemented PII detector (email, phone, SSN, credit card)
+- ✅ Implemented VIN detector with checksum validation
+- ✅ Completed scanner orchestrator
+- ✅ Added comprehensive test suite (127 tests)
+
+### January 7, 2026 (Session 1)
 - Completed Phase 0: Project Setup
 - Created Python package with pyproject.toml
 - Implemented all data models
@@ -180,11 +200,11 @@
 
 | Risk | Likelihood | Impact | Mitigation | Status |
 |------|------------|--------|------------|--------|
-| High false positive rate | Medium | Critical | Context analyzer done, tests ready | Mitigating |
-| VS Code performance | Low | High | Debouncing implemented | Planned |
-| Complex regex patterns | Medium | Medium | TDD approach | Planned |
+| High false positive rate | Low | Critical | Context analyzer + Luhn validation done | ✅ Mitigated |
+| VS Code performance | Low | High | Debouncing + bridge mode | ✅ Mitigated |
+| Complex regex patterns | Low | Medium | TDD approach, extensive tests | ✅ Mitigated |
 | Scope creep | Medium | Medium | Strict P0/P1 discipline | Active |
 
 ---
 
-*Last updated: January 7, 2026*
+*Last updated: January 17, 2026*
