@@ -13,8 +13,13 @@ settings:
 
 # Automotive-specific allowlist
 # Common test/example values that are not real data
+#
+# Pattern types:
+#   - Literal: matches if pattern is a substring of the detected text
+#   - Regex: prefix with "regex:" to use regular expression matching
+#
 allowlist:
-  # Example domains
+  # Example domains (literal patterns)
   - "example.com"
   - "test.local"
   - "@dealer.test"
@@ -30,6 +35,11 @@ allowlist:
   # Dealer codes that are obviously test data
   - "TESTDEALER"
   - "DEMO"
+
+  # Regex patterns for more flexible matching
+  - "regex:^noreply@"              # Auto-generated emails
+  - "regex:@(test|demo|example)\\." # Test domain emails
+  - "regex:^DLR-(TEST|DEMO|DEV)"   # Test dealer codes
 
 # File and path exclusions
 exclusions:

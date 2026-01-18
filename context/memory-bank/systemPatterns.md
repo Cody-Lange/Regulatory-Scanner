@@ -136,6 +136,32 @@ workspace.onDidSaveTextDocument(scanDocument)
 workspace.onDidOpenTextDocument(scanDocument)
 ```
 
+### 5. Strategy Pattern (Allowlist Matching)
+Allowlist supports multiple pattern matching strategies:
+
+```python
+class AllowlistMatcher:
+    """Matches text against literal and regex patterns."""
+
+    def set_patterns(self, patterns: list[str]) -> None:
+        # Separate patterns by type for optimized matching
+        for pattern in patterns:
+            if pattern.startswith("regex:"):
+                self._regex_patterns.append(compile(pattern[6:]))
+            else:
+                self._literal_patterns.append(pattern)
+
+    def is_allowlisted(self, text: str) -> bool:
+        # Check literals first (faster), then regex
+        if any(p in text for p in self._literal_patterns):
+            return True
+        return any(r.search(text) for r in self._regex_patterns)
+```
+
+Pattern types:
+- **Literal**: `"example.com"` - substring match
+- **Regex**: `"regex:^test_.*@"` - full regex matching
+
 ---
 
 ## Data Flow

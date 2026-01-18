@@ -11,6 +11,7 @@ import ast
 import re
 from typing import TYPE_CHECKING
 
+from sentinel_scan.allowlist import AllowlistMatcher
 from sentinel_scan.detection.base import Detector
 from sentinel_scan.detection.registry import DetectorRegistry
 from sentinel_scan.models import Severity, Violation
@@ -95,7 +96,7 @@ class PIIDetector(Detector):
 
     def __init__(self) -> None:
         """Initialize the PII detector."""
-        self._allowlist: list[str] = []
+        self._allowlist_matcher = AllowlistMatcher()
 
     @property
     def name(self) -> str:
@@ -105,10 +106,17 @@ class PIIDetector(Detector):
     def set_allowlist(self, patterns: list[str]) -> None:
         """Set allowlist patterns.
 
+        Supports both literal patterns and regex patterns.
+        Regex patterns must be prefixed with 'regex:'.
+
+        Examples:
+            - "example.com" - literal match
+            - "regex:^test_.*@" - regex match
+
         Args:
             patterns: List of patterns to allowlist
         """
-        self._allowlist = patterns
+        self._allowlist_matcher.set_patterns(patterns)
 
     def _is_allowlisted(self, text: str) -> bool:
         """Check if text matches any allowlist pattern.
@@ -119,7 +127,7 @@ class PIIDetector(Detector):
         Returns:
             True if allowlisted, False otherwise
         """
-        return any(pattern in text for pattern in self._allowlist)
+        return self._allowlist_matcher.is_allowlisted(text)
 
     def _adjust_severity(
         self,

@@ -361,6 +361,48 @@ class TestAllowlistFiltering:
 
         assert len(phone_violations) == 0
 
+    def test_regex_allowlist_filters_email(self, detector: PIIDetector) -> None:
+        """Test that regex allowlist patterns filter emails."""
+        source = 'email = "test_user@example.com"'
+        # Regex pattern to match emails starting with test_
+        violations = self._scan_source(detector, source, allowlist=["regex:^test_.*@"])
+
+        assert len(violations) == 0
+
+    def test_regex_allowlist_partial_no_match(self, detector: PIIDetector) -> None:
+        """Test that regex allowlist only matches when pattern matches."""
+        source = 'email = "real_user@example.com"'
+        # Regex pattern that should NOT match
+        violations = self._scan_source(detector, source, allowlist=["regex:^test_.*@"])
+
+        # Should still detect the email
+        assert len(violations) == 1
+
+    def test_regex_allowlist_phone_pattern(self, detector: PIIDetector) -> None:
+        """Test regex allowlist for phone numbers."""
+        source = 'phone = "555-010-1234"'
+        # Regex to match 555-010-* numbers
+        violations = self._scan_source(detector, source, allowlist=["regex:555-010-\\d{4}"])
+        phone_violations = [v for v in violations if v.violation_type == "phone"]
+
+        assert len(phone_violations) == 0
+
+    def test_mixed_allowlist_patterns(self, detector: PIIDetector) -> None:
+        """Test that mixed literal and regex patterns work together."""
+        source = """
+email1 = "noreply@company.com"
+email2 = "test_bot@example.com"
+email3 = "user@other.com"
+"""
+        # Mix of literal and regex patterns
+        violations = self._scan_source(detector, source, allowlist=["noreply@", "regex:^test_.*@"])
+
+        # Only the third email should be flagged
+        assert len(violations) == 1
+        # The third email is on line 4 (accounting for leading newline)
+        assert violations[0].line_number == 4
+        assert violations[0].violation_type == "email"
+
 
 class TestContextAwareness:
     """Tests for context-aware detection."""

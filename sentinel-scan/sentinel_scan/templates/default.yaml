@@ -11,12 +11,24 @@ settings:
   exit_on_violation: true
 
 # Global allowlist - patterns that should never trigger violations
-# These are checked against the matched text
+# These are checked against the matched text.
+#
+# Pattern types:
+#   - Literal: matches if pattern is a substring of the detected text
+#     Example: "example.com" matches "user@example.com"
+#
+#   - Regex: prefix with "regex:" to use regular expression matching
+#     Example: "regex:^test_.*@" matches emails starting with "test_"
+#
 allowlist:
-  - "example.com"       # Common example domain
-  - "test@"             # Test email prefix
-  - "555-0100"          # US fictional phone prefix
-  - "000-00-0000"       # Invalid SSN (all zeros)
+  - "example.com"       # Literal: Common example domain
+  - "test@"             # Literal: Test email prefix
+  - "555-0100"          # Literal: US fictional phone prefix
+  - "000-00-0000"       # Literal: Invalid SSN (all zeros)
+  # Regex examples (uncomment to use):
+  # - "regex:^noreply@"           # Emails starting with noreply@
+  # - "regex:@(test|example)\\.com$"  # Emails ending in @test.com or @example.com
+  # - "regex:\\+1-555-\\d{3}-\\d{4}"  # US fictional phone numbers
 
 # File and path exclusions
 exclusions:

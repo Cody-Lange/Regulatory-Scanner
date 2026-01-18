@@ -3,6 +3,7 @@
 ## Project Overview
 Sentinel Scan is a developer-native compliance scanning tool for LLM applications.
 Target: 5-week MVP delivering VS Code extension + CLI tool for Python code scanning.
+**Status: MVP COMPLETE (Phase 1-6) - Ready for deployment**
 
 ---
 
@@ -103,11 +104,14 @@ Target: 5-week MVP delivering VS Code extension + CLI tool for Python code scann
 | Scanner | Orchestrates detection | `scanner.py` |
 | Config | Configuration loading | `config.py` |
 | Models | Data structures | `models.py` |
+| Allowlist | Regex + literal pattern matching | `allowlist.py` |
 | PII Detector | Email, phone, SSN, etc. | `detection/pii_detector.py` |
 | VIN Detector | Vehicle IDs with checksum | `detection/vin_detector.py` |
 | Context Analyzer | AST-based context | `detection/context_analyzer.py` |
-| Rule Engine | Rule loading + matching | `rules/engine.py` |
+| Rule Engine | Rule loading + filtering | `rules/engine.py` |
 | VS Code Extension | IDE integration | `sentinel-scan-vscode/` |
+| Makefile | Build, test, publish | `Makefile` |
+| E2E Tests | End-to-end testing | `scripts/e2e_test.py` |
 
 ---
 
@@ -143,10 +147,26 @@ A feature is complete when:
 5. Consider false positive scenarios
 
 ### Handling False Positives
-1. Check allowlist first
+1. Check allowlist first (supports literal and regex patterns)
 2. Check inline ignore comments
 3. Check file exclusion patterns
 4. Log skipped violations for debugging
+
+### Allowlist Pattern Types
+```yaml
+allowlist:
+  - "example.com"              # Literal: substring match
+  - "regex:^noreply@"          # Regex: starts with noreply@
+  - "regex:@(test|example)\\." # Regex: test domain emails
+```
+
+Use `AllowlistMatcher` class for pattern matching:
+```python
+from sentinel_scan.allowlist import AllowlistMatcher
+
+matcher = AllowlistMatcher(["example.com", "regex:^test_"])
+matcher.is_allowlisted("user@example.com")  # True
+```
 
 ---
 
@@ -168,4 +188,4 @@ A feature is complete when:
 
 ---
 
-*Last updated: January 4, 2026*
+*Last updated: January 18, 2026*

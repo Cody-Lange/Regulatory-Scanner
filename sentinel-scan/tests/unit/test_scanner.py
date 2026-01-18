@@ -226,6 +226,187 @@ def test_email():
             assert v.severity >= Severity.HIGH
 
 
+class TestScannerErrorHandling:
+    """Tests for scanner error handling."""
+
+    def test_scanner_handles_context_analyzer_exception(self, monkeypatch) -> None:
+        """Test that scanner handles ContextAnalyzer exceptions gracefully."""
+        from sentinel_scan.detection import context_analyzer
+
+        original_init = context_analyzer.ContextAnalyzer.__init__
+
+        def failing_init(self, source, file_path):
+            if source and "trigger_error" in source:
+                raise RuntimeError("Simulated context analysis failure")
+            return original_init(self, source, file_path)
+
+        monkeypatch.setattr(context_analyzer.ContextAnalyzer, "__init__", failing_init)
+
+        config = get_default_config()
+        config.allowlist = []
+        scanner = Scanner(config)
+
+        source = 'email = "test@example.com"  # trigger_error'
+        result = scanner.scan_source(source, "test.py")
+
+        # Should not crash, should have error recorded
+        assert result is not None
+        assert len(result.errors) > 0
+        assert "Context analysis failed" in result.errors[0]
+
+    def test_scanner_handles_detector_exception(self, monkeypatch) -> None:
+        """Test that scanner handles detector exceptions gracefully."""
+        from sentinel_scan.detection import pii_detector
+
+        def failing_scan(_self, _source, _tree, _context, _file_path):
+            raise RuntimeError("Simulated detector failure")
+
+        monkeypatch.setattr(pii_detector.PIIDetector, "scan", failing_scan)
+
+        config = get_default_config()
+        config.allowlist = []
+        scanner = Scanner(config)
+
+        source = 'email = "test@example.com"'
+        result = scanner.scan_source(source, "test.py")
+
+        # Should not crash, should have error recorded
+        assert result is not None
+        assert len(result.errors) > 0
+        assert "Detector" in result.errors[0] and "failed" in result.errors[0]
+
+
+class TestScanFileEdgeCases:
+    """Tests for scan_file edge cases."""
+
+    def test_scan_file_with_violations_updates_path(self) -> None:
+        """Test that scan_file updates file paths in violations to absolute."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write('email = "realuser@testdomain.org"\n')
+            f.flush()
+
+            config = get_default_config()
+            config.allowlist = []
+            result = scan_file(Path(f.name), config)
+
+            assert result.has_violations
+            for v in result.violations:
+                assert Path(v.file_path).is_absolute()
+
+    def test_scan_file_with_permission_error(self, monkeypatch) -> None:
+        """Test handling of files that can't be read due to permissions."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write('email = "test@example.com"\n')
+            f.flush()
+            path = Path(f.name)
+
+        # Mock read_text to raise PermissionError
+        def mock_read_text(*_args, **_kwargs):
+            raise PermissionError("Permission denied")
+
+        monkeypatch.setattr(Path, "read_text", mock_read_text)
+
+        result = scan_file(path)
+
+        assert result.files_scanned == 0
+        assert len(result.errors) > 0
+        assert "Permission denied" in result.errors[0]
+
+    def test_scan_file_latin1_fallback_works(self) -> None:
+        """Test that latin-1 fallback works for non-UTF-8 files."""
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".py", delete=False) as f:
+            # Write valid latin-1 that's not valid UTF-8
+            # \xe9 is 'é' in latin-1
+            f.write(b'email = "test@example.com"  # caf\xe9\n')
+            f.flush()
+
+            result = scan_file(Path(f.name))
+
+            # Should handle with latin-1 fallback, no errors
+            assert result.files_scanned == 1
+
+
+class TestScanDirectoryEdgeCases:
+    """Tests for scan_directory edge cases."""
+
+    def test_scan_directory_with_file_path(self) -> None:
+        """Test scanning a file path instead of directory."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write('email = "test@example.com"\n')
+            f.flush()
+
+            result = scan_directory(Path(f.name))
+
+            assert result.files_scanned == 0
+            assert len(result.errors) > 0
+            assert "Not a directory" in result.errors[0]
+
+    def test_scan_directory_with_exclusions(self) -> None:
+        """Test that exclusion patterns work correctly."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create files that should and shouldn't be excluded
+            tests_dir = Path(tmpdir) / "tests"
+            tests_dir.mkdir()
+            test_file = tests_dir / "test_module.py"
+            test_file.write_text('email = "test@example.com"\n')
+
+            src_dir = Path(tmpdir) / "src"
+            src_dir.mkdir()
+            src_file = src_dir / "main.py"
+            src_file.write_text('email = "realuser@testdomain.org"\n')
+
+            config = get_default_config()
+            config.allowlist = []
+            config.exclusions.paths = ["*/tests/*"]
+
+            result = scan_directory(Path(tmpdir), config=config)
+
+            # Only src file should be scanned (tests excluded)
+            assert result.files_scanned == 1
+
+
+class TestMatchesPattern:
+    """Tests for the _matches_pattern helper function."""
+
+    def test_matches_simple_pattern(self) -> None:
+        """Test simple glob pattern matching."""
+        from sentinel_scan.scanner import _matches_pattern
+
+        assert _matches_pattern("/path/to/test.py", "*.py")
+        assert not _matches_pattern("/path/to/test.txt", "*.py")
+
+    def test_matches_double_star_pattern(self) -> None:
+        """Test ** glob pattern for recursive matching."""
+        from sentinel_scan.scanner import _matches_pattern
+
+        # Pattern with ** splits into start and end parts
+        assert _matches_pattern("/project/tests/unit/test_foo.py", "**/test_foo.py")
+        assert _matches_pattern("/project/tests/test_bar.py", "*/tests/*")
+
+    def test_matches_double_star_with_suffix(self) -> None:
+        """Test ** pattern with suffix matching."""
+        from sentinel_scan.scanner import _matches_pattern
+
+        # Test the actual behavior of ** patterns
+        assert _matches_pattern("/project/.venv/lib/python/site.py", "**/*.py")
+        assert _matches_pattern("/project/tests/unit/test_foo.py", "**/test_*.py")
+
+    def test_matches_pattern_normalizes_slashes(self) -> None:
+        """Test that pattern matching normalizes Windows-style slashes."""
+        from sentinel_scan.scanner import _matches_pattern
+
+        # Should handle both forward and backslashes
+        assert _matches_pattern("C:\\Users\\test\\file.py", "*/test/*")
+
+    def test_double_star_pattern_with_start_filter(self) -> None:
+        """Test ** pattern with start path filter."""
+        from sentinel_scan.scanner import _matches_pattern
+
+        # Pattern like "tests/**" should only match paths starting with "tests"
+        assert _matches_pattern("tests/unit/test_foo.py", "tests/**")
+        assert not _matches_pattern("src/tests/test_foo.py", "tests/**")
+
+
 class TestScannerPerformance:
     """Tests for scanner performance characteristics."""
 

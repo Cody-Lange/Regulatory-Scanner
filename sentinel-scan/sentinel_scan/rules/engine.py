@@ -1,7 +1,7 @@
 """Rule engine for Sentinel Scan.
 
 This module applies rules to filter and process violations:
-- Allowlist filtering
+- Allowlist filtering (supports both literal and regex patterns)
 - Severity adjustments based on context
 - Exclusion patterns
 """
@@ -9,6 +9,7 @@ This module applies rules to filter and process violations:
 import fnmatch
 from typing import Any
 
+from sentinel_scan.allowlist import AllowlistMatcher
 from sentinel_scan.models import Severity, Violation
 
 
@@ -16,9 +17,13 @@ class RuleEngine:
     """Engine for applying rules to violations.
 
     The rule engine takes raw violations and applies:
-    1. Allowlist filtering (global and per-detector)
+    1. Allowlist filtering (global and per-detector, supports regex)
     2. Context-based severity adjustments
     3. Deduplication
+
+    Allowlist patterns support both literal substring matches and regex:
+    - "example.com" - literal match
+    - "regex:^test_.*" - regex match (prefix with 'regex:')
     """
 
     def __init__(self, config: dict[str, Any]) -> None:
@@ -31,6 +36,12 @@ class RuleEngine:
         self.global_allowlist = config.get("allowlist", [])
         self.exclusion_paths = config.get("exclusions", {}).get("paths", [])
 
+        # Initialize global allowlist matcher
+        self._global_matcher = AllowlistMatcher(self.global_allowlist)
+
+        # Cache for per-detector matchers
+        self._detector_matchers: dict[str, AllowlistMatcher] = {}
+
     def should_exclude_file(self, file_path: str) -> bool:
         """Check if a file should be excluded from scanning.
 
@@ -42,8 +53,26 @@ class RuleEngine:
         """
         return any(fnmatch.fnmatch(file_path, pattern) for pattern in self.exclusion_paths)
 
+    def _get_detector_matcher(self, detector: str) -> AllowlistMatcher:
+        """Get or create an allowlist matcher for a specific detector.
+
+        Args:
+            detector: Name of the detector
+
+        Returns:
+            AllowlistMatcher for the detector
+        """
+        if detector not in self._detector_matchers:
+            detector_config = self.config.get("detectors", {}).get(detector, {})
+            detector_allowlist = detector_config.get("allowlist", [])
+            self._detector_matchers[detector] = AllowlistMatcher(detector_allowlist)
+        return self._detector_matchers[detector]
+
     def is_allowlisted(self, matched_text: str, detector: str) -> bool:
         """Check if matched text is in the allowlist.
+
+        Supports both literal substring matches and regex patterns.
+        Regex patterns must be prefixed with 'regex:'.
 
         Args:
             matched_text: The text that was matched
@@ -53,15 +82,12 @@ class RuleEngine:
             True if the text should be allowed (not flagged)
         """
         # Check global allowlist
-        for pattern in self.global_allowlist:
-            if pattern in matched_text:
-                return True
+        if self._global_matcher.is_allowlisted(matched_text):
+            return True
 
         # Check detector-specific allowlist
-        detector_config = self.config.get("detectors", {}).get(detector, {})
-        detector_allowlist = detector_config.get("allowlist", [])
-
-        return any(pattern in matched_text for pattern in detector_allowlist)
+        detector_matcher = self._get_detector_matcher(detector)
+        return detector_matcher.is_allowlisted(matched_text)
 
     def adjust_severity(self, violation: Violation, is_test: bool, flows_to_llm: bool) -> Severity:
         """Adjust violation severity based on context.
