@@ -151,11 +151,11 @@ def scan(
 
     # Format output
     if format_.lower() == "json":
-        formatter = JSONFormatter()
-        print(formatter.format(result))
+        json_formatter = JSONFormatter()
+        print(json_formatter.format(result))
     else:
-        formatter = ConsoleFormatter(console)
-        formatter.format(result)
+        console_formatter = ConsoleFormatter(console)
+        console_formatter.format(result)
 
     # Exit code
     if result.has_violations and cfg.settings.exit_on_violation:
