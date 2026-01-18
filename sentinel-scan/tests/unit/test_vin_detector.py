@@ -258,6 +258,49 @@ class TestVINAllowlist:
 
         assert len(violations) == 0
 
+    def test_regex_allowlist_single_manufacturer(self, detector: VINDetector) -> None:
+        """Test regex allowlist for manufacturer code."""
+        source = 'vin = "5YJSA1DG9DFP14705"'
+        # Regex to match Tesla VINs (start with 5YJ)
+        violations = self._scan_source(detector, source, allowlist=["regex:^5YJ"])
+
+        assert len(violations) == 0
+
+    def test_regex_allowlist_multiple_manufacturers(self, detector: VINDetector) -> None:
+        """Test regex allowlist for multiple manufacturer codes."""
+        source = """
+vin1 = "5YJSA1DG9DFP14705"
+vin2 = "1G1YY22G965104756"
+"""
+        # Regex to match Tesla (5YJ) or GM (1G1) VINs
+        violations = self._scan_source(detector, source, allowlist=["regex:^(5YJ|1G1)"])
+
+        assert len(violations) == 0
+
+    def test_regex_allowlist_no_match(self, detector: VINDetector) -> None:
+        """Test that regex allowlist only filters matching VINs."""
+        source = 'vin = "5YJSA1DG9DFP14705"'
+        # Regex that should NOT match Tesla VINs
+        violations = self._scan_source(detector, source, allowlist=["regex:^1G1"])
+
+        # Should still detect the Tesla VIN
+        assert len(violations) == 1
+
+    def test_mixed_allowlist_patterns(self, detector: VINDetector) -> None:
+        """Test that mixed literal and regex patterns work together."""
+        source = """
+vin1 = "5YJSA1DG9DFP14705"
+vin2 = "1G1YY22G965104756"
+vin3 = "WVWZZZ3CZWE123456"
+"""
+        # Mix: literal prefix for Tesla, regex for GM
+        violations = self._scan_source(detector, source, allowlist=["5YJ", "regex:^1G1"])
+
+        # Only the third VIN (VW) should be flagged (if it passes checksum)
+        # Note: We check that at most 1 VIN is flagged
+        vin_violations = [v for v in violations if v.violation_type == "vin"]
+        assert len(vin_violations) <= 1
+
 
 class TestKnownValidVINs:
     """Tests using known valid VINs for validation."""

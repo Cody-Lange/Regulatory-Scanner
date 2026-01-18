@@ -160,25 +160,25 @@
 
 ---
 
-## Phase 4: False Positive Management (Week 4)
+## Phase 4: False Positive Management (Week 4) ✅ COMPLETE
 
 ### 4.1 Allowlists
-- [ ] Global allowlist in config
-- [ ] Per-detector allowlists
-- [ ] Regex pattern allowlists
-- [ ] Write allowlist tests
+- [x] Global allowlist in config
+- [x] Per-detector allowlists
+- [x] Regex pattern allowlists (supports `regex:` prefix)
+- [x] Write allowlist tests (test_allowlist.py + detector tests)
 
 ### 4.2 Inline Ignores
-- [ ] Parse `# sentinel-scan: ignore` comments
-- [ ] Support specific type ignores
-- [ ] Support multiple types per line
-- [ ] Write inline ignore tests
+- [x] Parse `# sentinel-scan: ignore` comments
+- [x] Support specific type ignores
+- [x] Support multiple types per line
+- [x] Write inline ignore tests
 
 ### 4.3 File Exclusions
-- [ ] Path pattern exclusions
-- [ ] Glob pattern support
-- [ ] Default exclusions (tests, venv)
-- [ ] Write exclusion tests
+- [x] Path pattern exclusions
+- [x] Glob pattern support
+- [x] Default exclusions (tests, venv)
+- [x] Write exclusion tests
 
 ---
 

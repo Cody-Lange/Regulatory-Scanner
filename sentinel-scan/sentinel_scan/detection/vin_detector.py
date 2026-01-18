@@ -8,6 +8,7 @@ import ast
 import re
 from typing import TYPE_CHECKING
 
+from sentinel_scan.allowlist import AllowlistMatcher, is_regex_pattern
 from sentinel_scan.detection.base import Detector
 from sentinel_scan.detection.registry import DetectorRegistry
 from sentinel_scan.models import Severity, Violation
@@ -147,7 +148,8 @@ class VINDetector(Detector):
             validate_checksum: Whether to validate VIN checksum (default True)
         """
         self._validate_checksum = validate_checksum
-        self._allowlist: list[str] = []
+        self._allowlist_matcher = AllowlistMatcher()
+        self._literal_patterns: list[str] = []  # For VIN-specific prefix matching
 
     @property
     def name(self) -> str:
@@ -157,10 +159,29 @@ class VINDetector(Detector):
     def set_allowlist(self, patterns: list[str]) -> None:
         """Set allowlist patterns.
 
+        Supports both literal patterns and regex patterns.
+        Regex patterns must be prefixed with 'regex:'.
+
+        For literal patterns, VIN-specific matching is used:
+        - Exact match (case-insensitive)
+        - Prefix match (e.g., "5YJ" matches any Tesla VIN)
+
+        For regex patterns, standard regex matching is used.
+
+        Examples:
+            - "5YJ" - matches any VIN starting with 5YJ (Tesla)
+            - "5YJSA1DG9DFP14705" - matches this specific VIN
+            - "regex:^(5YJ|1G1)" - matches VINs starting with 5YJ or 1G1
+
         Args:
-            patterns: List of VINs or prefixes to allowlist
+            patterns: List of VINs, prefixes, or regex patterns to allowlist
         """
-        self._allowlist = patterns
+        # Separate regex patterns from literal patterns
+        regex_patterns = [p for p in patterns if is_regex_pattern(p)]
+        self._literal_patterns = [p for p in patterns if not is_regex_pattern(p)]
+
+        # Use AllowlistMatcher only for regex patterns
+        self._allowlist_matcher.set_patterns(regex_patterns)
 
     def _is_allowlisted(self, vin: str) -> bool:
         """Check if VIN matches any allowlist pattern.
@@ -171,8 +192,13 @@ class VINDetector(Detector):
         Returns:
             True if allowlisted, False otherwise
         """
+        # Check regex patterns first
+        if self._allowlist_matcher.is_allowlisted(vin):
+            return True
+
+        # Check literal patterns with VIN-specific prefix matching
         vin_upper = vin.upper()
-        for pattern in self._allowlist:
+        for pattern in self._literal_patterns:
             pattern_upper = pattern.upper()
             if vin_upper == pattern_upper or vin_upper.startswith(pattern_upper):
                 return True
