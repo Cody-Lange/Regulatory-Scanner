@@ -264,7 +264,9 @@ def install_hook(
                 break
             current = current.parent
         else:
-            console.print("[red]Not a git repository. Run from within a git repo or specify --git-dir.[/red]")
+            console.print(
+                "[red]Not a git repository. Run from within a git repo or specify --git-dir.[/red]"
+            )
             raise typer.Exit(code=1)
 
     # Ensure hooks directory exists

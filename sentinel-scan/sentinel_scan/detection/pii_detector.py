@@ -20,33 +20,29 @@ if TYPE_CHECKING:
 
 
 # Email pattern - standard email format validation
-EMAIL_PATTERN = re.compile(
-    r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
-)
+EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 
 # Phone patterns - various US formats
 PHONE_PATTERNS = [
     # (555) 123-4567 or (555)123-4567
-    re.compile(r'\(\d{3}\)\s?\d{3}[-.\s]?\d{4}\b'),
+    re.compile(r"\(\d{3}\)\s?\d{3}[-.\s]?\d{4}\b"),
     # 555-123-4567 or 555.123.4567 or 555 123 4567
-    re.compile(r'\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b'),
+    re.compile(r"\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b"),
     # +1-555-123-4567 or +1 555 123 4567
-    re.compile(r'\+1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b'),
+    re.compile(r"\+1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b"),
 ]
 
 # SSN pattern - XXX-XX-XXXX format with validation
-SSN_PATTERN = re.compile(
-    r'\b(?!000|666|9\d{2})(\d{3})[-\s](?!00)(\d{2})[-\s](?!0000)(\d{4})\b'
-)
+SSN_PATTERN = re.compile(r"\b(?!000|666|9\d{2})(\d{3})[-\s](?!00)(\d{2})[-\s](?!0000)(\d{4})\b")
 
 # Credit card patterns - various formats (13-19 digits)
 CREDIT_CARD_PATTERNS = [
     # Continuous digits (13-19 digits)
-    re.compile(r'\b[3-6]\d{12,18}\b'),
+    re.compile(r"\b[3-6]\d{12,18}\b"),
     # With spaces (groups of 4)
-    re.compile(r'\b[3-6]\d{3}[\s-]\d{4}[\s-]\d{4}[\s-]\d{4}\b'),
+    re.compile(r"\b[3-6]\d{3}[\s-]\d{4}[\s-]\d{4}[\s-]\d{4}\b"),
     # Amex format (15 digits: 4-6-5)
-    re.compile(r'\b3[47]\d{2}[\s-]?\d{6}[\s-]?\d{5}\b'),
+    re.compile(r"\b3[47]\d{2}[\s-]?\d{6}[\s-]?\d{5}\b"),
 ]
 
 
@@ -144,7 +140,9 @@ class PIIDetector(Detector):
         scan_context = context.get_context(line_number)
 
         # Test files/functions get reduced severity
-        if (scan_context.is_test_file or scan_context.is_in_test_function) and base_severity > Severity.LOW:
+        if (
+            scan_context.is_test_file or scan_context.is_in_test_function
+        ) and base_severity > Severity.LOW:
             return Severity(base_severity - 1)
 
         # Near LLM calls, elevate severity
@@ -153,7 +151,9 @@ class PIIDetector(Detector):
 
         return base_severity
 
-    def _should_skip(self, context: "ContextAnalyzer", line_number: int, violation_type: str) -> bool:
+    def _should_skip(
+        self, context: "ContextAnalyzer", line_number: int, violation_type: str
+    ) -> bool:
         """Determine if a violation should be skipped based on context.
 
         Args:
@@ -242,7 +242,9 @@ class PIIDetector(Detector):
             severity=severity,
             regulation=regulation_map.get(violation_type, "GDPR, CCPA"),
             message=message_map.get(violation_type, f"{violation_type} detected"),
-            recommendation=recommendation_map.get(violation_type, "Review and remove sensitive data"),
+            recommendation=recommendation_map.get(
+                violation_type, "Review and remove sensitive data"
+            ),
             context_info={
                 "is_test_file": scan_context.is_test_file,
                 "is_in_test_function": scan_context.is_in_test_function,

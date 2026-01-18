@@ -46,9 +46,7 @@ class Scanner:
         Returns:
             List of configured detector instances
         """
-        detectors = DetectorRegistry.create_all(
-            {"detectors": self.config.detectors}
-        )
+        detectors = DetectorRegistry.create_all({"detectors": self.config.detectors})
 
         # Configure allowlists for each detector
         for detector in detectors:
@@ -87,10 +85,7 @@ class Scanner:
             "critical": Severity.CRITICAL,
         }
 
-        min_severity = severity_map.get(
-            self.config.settings.min_severity.lower(),
-            Severity.LOW
-        )
+        min_severity = severity_map.get(self.config.settings.min_severity.lower(), Severity.LOW)
 
         return [v for v in violations if v.severity >= min_severity]
 

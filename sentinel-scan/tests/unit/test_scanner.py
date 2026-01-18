@@ -33,10 +33,10 @@ class TestScannerOrchestrator:
 
     def test_scanner_finds_pii_violations(self, scanner: Scanner) -> None:
         """Test that scanner detects PII violations."""
-        source = '''
+        source = """
 email = "user@example.com"
 phone = "555-123-4567"
-'''
+"""
         result = scanner.scan_source(source, "test.py")
 
         assert result.has_violations
@@ -54,12 +54,12 @@ phone = "555-123-4567"
 
     def test_scanner_counts_lines(self, scanner: Scanner) -> None:
         """Test that scanner correctly counts lines."""
-        source = '''line1
+        source = """line1
 line2
 line3
 line4
 line5
-'''
+"""
         result = scanner.scan_source(source, "test.py")
 
         assert result.lines_scanned == 5
@@ -98,11 +98,11 @@ def process():
 
     def test_scanner_handles_syntax_errors(self, scanner: Scanner) -> None:
         """Test that scanner handles files with syntax errors gracefully."""
-        source = '''
+        source = """
 def broken(
     # Missing closing paren
 email = "test@example.com"
-'''
+"""
         result = scanner.scan_source(source, "test.py")
 
         # Should not crash, may have errors or limited detection
@@ -215,10 +215,10 @@ class TestScannerConfiguration:
         config.allowlist = []
         scanner = Scanner(config)
 
-        source = '''
+        source = """
 def test_email():
     email = "test@example.com"
-'''
+"""
         result = scanner.scan_source(source, "tests/test_module.py")
 
         # Only HIGH or above should be reported
@@ -233,7 +233,9 @@ class TestScannerPerformance:
         """Test scanning a large file completes in reasonable time."""
         # Generate a 1000-line file
         lines = ['x = "value"'] * 1000
-        lines[500] = 'email = "realuser@testdomain.org"'  # Add one violation (not in default allowlist)
+        lines[500] = (
+            'email = "realuser@testdomain.org"'  # Add one violation (not in default allowlist)
+        )
         source = "\n".join(lines)
 
         config = get_default_config()

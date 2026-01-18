@@ -80,12 +80,12 @@ class TestVINDetection:
     def test_detects_multiple_vins(self, detector: VINDetector) -> None:
         """Test detection of multiple VINs."""
         # Both VINs must have valid checksums
-        source = '''
+        source = """
 vins = [
     "5YJSA1DG9DFP14705",
     "1G1YY22G765104068",
 ]
-'''
+"""
         violations = self._scan_source(detector, source)
         vin_violations = [v for v in violations if v.violation_type == "vin"]
 
@@ -93,12 +93,12 @@ vins = [
 
     def test_ignores_vin_with_invalid_characters(self, detector: VINDetector) -> None:
         """Test that VINs with I, O, Q are not detected."""
-        source = '''
+        source = """
 # VINs cannot contain I, O, or Q
 invalid1 = "1HGCM82I33A123456"  # Contains I
 invalid2 = "1HGCM82O33A123456"  # Contains O
 invalid3 = "1HGCMQ2633A123456"  # Contains Q
-'''
+"""
         violations = self._scan_source(detector, source)
         vin_violations = [v for v in violations if v.violation_type == "vin"]
 
@@ -106,10 +106,10 @@ invalid3 = "1HGCMQ2633A123456"  # Contains Q
 
     def test_ignores_wrong_length(self, detector: VINDetector) -> None:
         """Test that non-17 character strings are not detected."""
-        source = '''
+        source = """
 too_short = "1HGCM82633A12345"   # 16 chars
 too_long = "1HGCM82633A12345678"  # 19 chars
-'''
+"""
         violations = self._scan_source(detector, source)
         vin_violations = [v for v in violations if v.violation_type == "vin"]
 
@@ -182,9 +182,9 @@ class TestVINContextAwareness:
 
     def test_skips_comment_lines(self, detector: VINDetector) -> None:
         """Test that comment-only lines are skipped."""
-        source = '''# Example VIN: 5YJSA1DG9DFP14705
+        source = """# Example VIN: 5YJSA1DG9DFP14705
 real_vin = "1G1YY22G765104068"
-'''
+"""
         violations = self._scan_source(detector, source)
         vin_violations = [v for v in violations if v.violation_type == "vin"]
 
@@ -207,13 +207,13 @@ def lookup_vehicle():
 
     def test_increases_severity_near_llm_call(self, detector: VINDetector) -> None:
         """Test that VINs near LLM API calls have higher severity."""
-        source = '''
+        source = """
 vin = "5YJSA1DG9DFP14705"
 response = openai.chat.completions.create(
     model="gpt-4",
     messages=[{"role": "user", "content": f"Lookup VIN: {vin}"}]
 )
-'''
+"""
         violations = self._scan_source(detector, source)
 
         # Near LLM calls, should be flagged with context
@@ -231,7 +231,11 @@ class TestVINAllowlist:
         return VINDetector()
 
     def _scan_source(
-        self, detector: VINDetector, source: str, file_path: str = "test.py", allowlist: list | None = None
+        self,
+        detector: VINDetector,
+        source: str,
+        file_path: str = "test.py",
+        allowlist: list | None = None,
     ) -> list:
         """Helper to scan source code."""
         tree = ast.parse(source)

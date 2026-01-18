@@ -54,7 +54,11 @@ class TestScanCommand:
         # Should complete successfully with Rich panel output
         assert result.exit_code == 0
         # Output contains either "No violations" or "Sentinel Scan" panel header
-        assert "No violations" in result.stdout or "Sentinel" in result.stdout or result.stdout.strip() != ""
+        assert (
+            "No violations" in result.stdout
+            or "Sentinel" in result.stdout
+            or result.stdout.strip() != ""
+        )
 
     def test_scan_with_format(self, tmp_path):
         """Verify scan command accepts format option."""
