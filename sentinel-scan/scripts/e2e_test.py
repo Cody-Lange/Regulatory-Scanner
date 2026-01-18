@@ -96,9 +96,11 @@ if __name__ == "__main__":
         )
 
         code, stdout, stderr = self.run_command(["scan", "clean.py"])
+        # Combine stdout and stderr (Rich may output to either)
+        output = stdout + stderr
         self.assert_true(code == 0, "Exit code is 0 (no violations)")
         self.assert_true(
-            "No violations" in stdout or "0 violation" in stdout or "No compliance" in stdout,
+            "No violations" in output or "0 violation" in output or "No compliance" in output,
             "Reports no violations",
         )
 
@@ -117,10 +119,12 @@ ssn = "123-45-6789"
         )
 
         code, stdout, stderr = self.run_command(["scan", "violations.py"])
+        # Combine stdout and stderr for checking (Rich may output to either)
+        output = (stdout + stderr).lower()
         self.assert_true(code == 1, "Exit code is 1 (violations found)")
-        self.assert_true("email" in stdout.lower(), "Email violation detected")
-        self.assert_true("phone" in stdout.lower(), "Phone violation detected")
-        self.assert_true("ssn" in stdout.lower(), "SSN violation detected")
+        self.assert_true("email" in output, "Email violation detected")
+        self.assert_true("phone" in output, "Phone violation detected")
+        self.assert_true("ssn" in output, "SSN violation detected")
 
     def test_scan_json_output(self) -> None:
         """Test JSON output format."""
@@ -188,10 +192,9 @@ ssn = "123-45-6789"      # CRITICAL
         """Test init command with default template."""
         print("\n[Test: Init Default]")
         config_path = self.temp_dir / "sentinel_scan.yaml"
-        if config_path.exists():
-            config_path.unlink()
 
-        code, stdout, stderr = self.run_command(["init"])
+        # Use --force to overwrite if exists
+        code, stdout, stderr = self.run_command(["init", "--force"])
         self.assert_true(code == 0, "Exit code is 0")
         self.assert_true(config_path.exists(), "Config file created")
 
@@ -204,10 +207,9 @@ ssn = "123-45-6789"      # CRITICAL
         """Test init command with automotive template."""
         print("\n[Test: Init Automotive Template]")
         config_path = self.temp_dir / "sentinel_scan.yaml"
-        if config_path.exists():
-            config_path.unlink()
 
-        code, stdout, stderr = self.run_command(["init", "--template", "automotive"])
+        # Use --force to overwrite if exists
+        code, stdout, stderr = self.run_command(["init", "--template", "automotive", "--force"])
         self.assert_true(code == 0, "Exit code is 0")
         self.assert_true(config_path.exists(), "Config file created")
 
