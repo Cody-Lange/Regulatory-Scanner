@@ -3,6 +3,7 @@
 ## Project Overview
 Sentinel Scan is a developer-native compliance scanning tool for LLM applications.
 Target: 5-week MVP delivering VS Code extension + CLI tool for Python code scanning.
+**Status: MVP COMPLETE (Phase 1-6) - Ready for deployment**
 
 ---
 
@@ -109,6 +110,8 @@ Target: 5-week MVP delivering VS Code extension + CLI tool for Python code scann
 | Context Analyzer | AST-based context | `detection/context_analyzer.py` |
 | Rule Engine | Rule loading + filtering | `rules/engine.py` |
 | VS Code Extension | IDE integration | `sentinel-scan-vscode/` |
+| Makefile | Build, test, publish | `Makefile` |
+| E2E Tests | End-to-end testing | `scripts/e2e_test.py` |
 
 ---
 
