@@ -36,7 +36,7 @@ class ConsoleFormatter:
         """Print message when no violations found."""
         self.console.print(
             Panel(
-                f"[green]✓ No compliance violations found[/green]\n\n"
+                f"[green][OK] No compliance violations found[/green]\n\n"
                 f"Files scanned: {result.files_scanned}\n"
                 f"Lines scanned: {result.lines_scanned}",
                 title="Sentinel Scan",
@@ -49,7 +49,7 @@ class ConsoleFormatter:
         # Header
         self.console.print(
             Panel(
-                f"[red]✗ {result.violation_count} compliance violation(s) found[/red]",
+                f"[red][!!] {result.violation_count} compliance violation(s) found[/red]",
                 title="Sentinel Scan",
                 border_style="red",
             )
@@ -78,7 +78,7 @@ class ConsoleFormatter:
         )
         self.console.print(f"    Matched: {violation.matched_text}")
         self.console.print(f"    Regulation: {violation.regulation}")
-        self.console.print(f"    [dim]💡 {violation.recommendation}[/dim]")
+        self.console.print(f"    [dim]Tip: {violation.recommendation}[/dim]")
 
     def _print_summary(self, result: ScanResult) -> None:
         """Print summary table."""

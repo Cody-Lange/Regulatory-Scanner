@@ -217,7 +217,7 @@ def init(
     # Copy template to output
     try:
         output.write_text(template_file.read_text())
-        console.print(f"[green]✓ Created config file: {output}[/green]")
+        console.print(f"[green][OK] Created config file: {output}[/green]")
         console.print(f"  Template: {template}")
         console.print("\nEdit the file to customize settings for your project.")
     except Exception as e:
@@ -308,7 +308,7 @@ exit 0
     try:
         hook_path.write_text(hook_content)
         hook_path.chmod(0o755)  # Make executable
-        console.print(f"[green]✓ Installed {hook_type} hook: {hook_path}[/green]")
+        console.print(f"[green][OK] Installed {hook_type} hook: {hook_path}[/green]")
         console.print("\nThe hook will automatically scan Python files before each commit.")
     except Exception as e:
         console.print(f"[red]Error installing hook: {e}[/red]")
