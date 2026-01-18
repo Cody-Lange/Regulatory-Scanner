@@ -24,6 +24,7 @@ export class SentinelDiagnostics implements vscode.Disposable {
      */
     dispose(): void {
         this.diagnosticCollection.dispose();
+        this.scanner.dispose();
         this.debounceTimers.forEach((timer) => clearTimeout(timer));
     }
 

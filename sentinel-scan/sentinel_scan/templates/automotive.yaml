@@ -1,0 +1,170 @@
+# Sentinel Scan Automotive Industry Template
+# Optimized for vehicle-related data compliance
+# Documentation: https://sentinelscan.io/docs/templates/automotive
+
+version: "1.0"
+
+settings:
+  # Automotive industry requires high compliance standards
+  min_severity: medium
+
+  # Always fail CI on violations
+  exit_on_violation: true
+
+# Automotive-specific allowlist
+# Common test/example values that are not real data
+allowlist:
+  # Example domains
+  - "example.com"
+  - "test.local"
+  - "@dealer.test"
+
+  # Test phone numbers (US fictional prefix)
+  - "555-0100"
+  - "555-0199"
+
+  # Test VIN prefixes (common test patterns)
+  - "00000000000000000"  # All zeros (invalid)
+  - "11111111111111111"  # All ones (test pattern)
+
+  # Dealer codes that are obviously test data
+  - "TESTDEALER"
+  - "DEMO"
+
+# File and path exclusions
+exclusions:
+  paths:
+    - "*/tests/*"
+    - "*/test_*"
+    - "*/.venv/*"
+    - "*/.git/*"
+    - "*/__pycache__/*"
+    - "*/node_modules/*"
+    - "*.pyc"
+    - "*/fixtures/*"
+    - "*/mock_data/*"
+    - "*/sample_data/*"
+
+# Detector configurations - Automotive focused
+detectors:
+  # VIN Detection - CRITICAL for automotive
+  vin:
+    enabled: true
+    severity: critical
+    regulation: "GDPR (indirect identifier), CCPA, FTC Guidelines"
+    # Always validate checksum to reduce false positives
+    validate_checksum: true
+    # VIN-specific allowlist (test VINs, demo vehicles)
+    allowlist:
+      - "5YJ"  # Tesla test prefix (if using for demos)
+
+  # PII (Personally Identifiable Information) detector
+  pii:
+    enabled: true
+    patterns:
+      email:
+        enabled: true
+        severity: high
+        regulation: "GDPR Article 6, CCPA §1798.100, CAN-SPAM"
+        allowlist:
+          - "@example.com"
+          - "@test.local"
+          - "@dealer.test"
+          - "noreply@"
+          - "donotreply@"
+
+      phone:
+        enabled: true
+        severity: high
+        regulation: "TCPA, GDPR Article 6"
+        # Phone is critical for automotive - dealer contact, customer service
+
+      ssn:
+        enabled: true
+        severity: critical
+        regulation: "GLBA, FCRA, State Privacy Laws"
+        # SSN may appear in financing/credit applications
+
+      credit_card:
+        enabled: true
+        severity: critical
+        regulation: "PCI-DSS §3.4, GLBA"
+        # Credit cards used for deposits, parts purchases
+
+      address:
+        enabled: true
+        severity: high
+        regulation: "GDPR Article 6, CCPA"
+        # Physical addresses for delivery, registration
+
+  # Custom automotive patterns
+  custom:
+    enabled: true
+    patterns:
+      # Dealer codes (internal identifiers)
+      - name: "dealer_code"
+        pattern: 'DLR-[A-Z0-9]{5,10}'
+        severity: "medium"
+        regulation: "Internal Policy"
+        message: "Dealer code detected - may identify business partner"
+        allowlist:
+          - "DLR-TEST"
+          - "DLR-DEMO"
+
+      # Customer IDs
+      - name: "customer_id"
+        pattern: 'CUST-[0-9]{6,12}'
+        severity: "high"
+        regulation: "CCPA, GDPR"
+        message: "Customer ID detected - indirect PII identifier"
+        allowlist:
+          - "CUST-000000"
+          - "CUST-999999"
+
+      # Vehicle Service Record IDs
+      - name: "service_record_id"
+        pattern: 'SVC-[A-Z0-9]{8,15}'
+        severity: "medium"
+        regulation: "Internal Policy"
+        message: "Service record ID - links to vehicle/customer data"
+
+      # Finance Application IDs
+      - name: "finance_app_id"
+        pattern: 'FIN-[0-9]{10,15}'
+        severity: "high"
+        regulation: "GLBA, FCRA"
+        message: "Finance application ID - contains sensitive credit data"
+
+      # License Plate (US format)
+      - name: "license_plate"
+        pattern: '\b[A-Z0-9]{1,3}[-\s]?[A-Z0-9]{2,4}[-\s]?[A-Z0-9]{1,4}\b'
+        severity: "high"
+        regulation: "DPPA (Driver Privacy Protection Act)"
+        message: "License plate number detected - protected under DPPA"
+
+      # Driver's License Number (generic pattern)
+      - name: "drivers_license"
+        pattern: '\b[A-Z][0-9]{7,14}\b'
+        severity: "critical"
+        regulation: "DPPA, State Privacy Laws"
+        message: "Potential driver's license number detected"
+
+# Context-specific severity adjustments
+context:
+  # Increase severity when data flows to external APIs
+  llm_api_patterns:
+    - "openai"
+    - "anthropic"
+    - "azure.ai"
+    - "vertexai"
+    - "bedrock"
+    - "cohere"
+    - "huggingface"
+
+  # Test contexts get reduced severity
+  test_patterns:
+    - "test_"
+    - "_test"
+    - "mock_"
+    - "fake_"
+    - "fixture"

@@ -6,7 +6,7 @@
  */
 
 import * as vscode from 'vscode';
-import { spawn } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 
 /**
  * Represents a violation detected by the scanner.
@@ -38,10 +38,31 @@ export interface ScanResult {
 }
 
 /**
+ * Bridge response from the Python scanner.
+ */
+interface BridgeResponse {
+    violations?: Violation[];
+    files_scanned?: number;
+    lines_scanned?: number;
+    scan_duration_ms?: number;
+    errors?: string[];
+    error?: string;
+    status?: string;
+    version?: string;
+}
+
+/**
  * Scanner class that communicates with Python backend.
  */
 export class Scanner {
     private pythonPath: string;
+    private bridgeProcess: ChildProcess | null = null;
+    private pendingRequests: Map<number, {
+        resolve: (value: BridgeResponse) => void;
+        reject: (reason: Error) => void;
+    }> = new Map();
+    private requestId = 0;
+    private outputBuffer = '';
 
     constructor() {
         this.pythonPath = this.getPythonPath();
@@ -56,34 +77,162 @@ export class Scanner {
     }
 
     /**
+     * Start the bridge process if not already running.
+     */
+    private async ensureBridgeRunning(): Promise<void> {
+        if (this.bridgeProcess && !this.bridgeProcess.killed) {
+            return;
+        }
+
+        return new Promise((resolve, reject) => {
+            this.bridgeProcess = spawn(this.pythonPath, ['-m', 'sentinel_scan.cli', 'bridge'], {
+                stdio: ['pipe', 'pipe', 'pipe']
+            });
+
+            this.bridgeProcess.stdout?.on('data', (data: Buffer) => {
+                this.outputBuffer += data.toString();
+                this.processOutputBuffer();
+            });
+
+            this.bridgeProcess.stderr?.on('data', (data: Buffer) => {
+                console.error('Sentinel Scan stderr:', data.toString());
+            });
+
+            this.bridgeProcess.on('close', (code) => {
+                console.log(`Sentinel Scan bridge exited with code ${code}`);
+                this.bridgeProcess = null;
+                // Reject any pending requests
+                for (const [, { reject }] of this.pendingRequests) {
+                    reject(new Error('Bridge process closed'));
+                }
+                this.pendingRequests.clear();
+            });
+
+            this.bridgeProcess.on('error', (err) => {
+                console.error('Sentinel Scan bridge error:', err);
+                reject(err);
+            });
+
+            // Give it a moment to start
+            setTimeout(resolve, 100);
+        });
+    }
+
+    /**
+     * Process the output buffer for complete JSON responses.
+     */
+    private processOutputBuffer(): void {
+        const lines = this.outputBuffer.split('\n');
+
+        // Keep the last incomplete line in the buffer
+        this.outputBuffer = lines.pop() || '';
+
+        for (const line of lines) {
+            if (!line.trim()) continue;
+
+            try {
+                const response = JSON.parse(line) as BridgeResponse;
+                // For simplicity, resolve all pending requests with this response
+                // In a more complex implementation, we'd track request IDs
+                for (const [id, { resolve }] of this.pendingRequests) {
+                    resolve(response);
+                    this.pendingRequests.delete(id);
+                    break; // Only resolve one request per response
+                }
+            } catch (e) {
+                console.error('Failed to parse bridge response:', line, e);
+            }
+        }
+    }
+
+    /**
+     * Send a request to the bridge and wait for response.
+     */
+    private async sendRequest(request: object): Promise<BridgeResponse> {
+        await this.ensureBridgeRunning();
+
+        return new Promise((resolve, reject) => {
+            const id = ++this.requestId;
+            this.pendingRequests.set(id, { resolve, reject });
+
+            const json = JSON.stringify(request) + '\n';
+            this.bridgeProcess?.stdin?.write(json);
+
+            // Timeout after 30 seconds
+            setTimeout(() => {
+                if (this.pendingRequests.has(id)) {
+                    this.pendingRequests.delete(id);
+                    reject(new Error('Request timeout'));
+                }
+            }, 30000);
+        });
+    }
+
+    /**
      * Scan file content and return violations.
      */
     async scanContent(content: string, filePath: string): Promise<Violation[]> {
-        // TODO: Implement actual Python subprocess communication in Phase 3
-        // For now, return empty array (no violations)
+        try {
+            const response = await this.sendRequest({
+                action: 'scan',
+                content: content,
+                file_path: filePath
+            });
 
-        // This is a placeholder implementation
-        // The real implementation will:
-        // 1. Spawn Python subprocess
-        // 2. Pass content via stdin
-        // 3. Parse JSON output from stdout
-        // 4. Return violations
+            if (response.error) {
+                console.error('Scan error:', response.error);
+                return [];
+            }
 
-        return [];
+            return response.violations || [];
+        } catch (e) {
+            console.error('Failed to scan content:', e);
+            return [];
+        }
     }
 
     /**
      * Scan a file by path.
      */
     async scanFile(filePath: string): Promise<ScanResult> {
-        // TODO: Implement in Phase 3
-        return {
-            violations: [],
-            files_scanned: 1,
-            lines_scanned: 0,
-            scan_duration_ms: 0,
-            errors: []
-        };
+        try {
+            // Read file content
+            const uri = vscode.Uri.file(filePath);
+            const content = await vscode.workspace.fs.readFile(uri);
+            const text = new TextDecoder().decode(content);
+
+            const response = await this.sendRequest({
+                action: 'scan',
+                content: text,
+                file_path: filePath
+            });
+
+            if (response.error) {
+                return {
+                    violations: [],
+                    files_scanned: 0,
+                    lines_scanned: 0,
+                    scan_duration_ms: 0,
+                    errors: [response.error]
+                };
+            }
+
+            return {
+                violations: response.violations || [],
+                files_scanned: response.files_scanned || 1,
+                lines_scanned: response.lines_scanned || 0,
+                scan_duration_ms: response.scan_duration_ms || 0,
+                errors: response.errors || []
+            };
+        } catch (e) {
+            return {
+                violations: [],
+                files_scanned: 0,
+                lines_scanned: 0,
+                scan_duration_ms: 0,
+                errors: [String(e)]
+            };
+        }
     }
 
     /**
@@ -101,5 +250,33 @@ export class Scanner {
                 resolve(false);
             });
         });
+    }
+
+    /**
+     * Ping the bridge to check if it's responsive.
+     */
+    async ping(): Promise<{ status: string; version: string } | null> {
+        try {
+            const response = await this.sendRequest({ action: 'ping' });
+            if (response.status === 'ok') {
+                return {
+                    status: response.status,
+                    version: response.version || 'unknown'
+                };
+            }
+            return null;
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Dispose of the scanner and kill the bridge process.
+     */
+    dispose(): void {
+        if (this.bridgeProcess) {
+            this.bridgeProcess.kill();
+            this.bridgeProcess = null;
+        }
     }
 }

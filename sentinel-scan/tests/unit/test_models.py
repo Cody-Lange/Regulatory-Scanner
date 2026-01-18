@@ -65,9 +65,7 @@ class TestScanResult:
         """Verify violation count property."""
         assert sample_scan_result.violation_count == 1
 
-    def test_has_violations(
-        self, sample_scan_result: ScanResult, empty_scan_result: ScanResult
-    ):
+    def test_has_violations(self, sample_scan_result: ScanResult, empty_scan_result: ScanResult):
         """Verify has_violations property."""
         assert sample_scan_result.has_violations is True
         assert empty_scan_result.has_violations is False

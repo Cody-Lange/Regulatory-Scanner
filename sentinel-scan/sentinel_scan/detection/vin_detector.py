@@ -17,17 +17,43 @@ if TYPE_CHECKING:
 
 
 # VIN pattern - 17 alphanumeric characters, excluding I, O, Q
-VIN_PATTERN = re.compile(
-    r'\b[A-HJ-NPR-Z0-9]{17}\b'
-)
+VIN_PATTERN = re.compile(r"\b[A-HJ-NPR-Z0-9]{17}\b")
 
 # Character transliteration values for VIN checksum
 VIN_TRANSLITERATION = {
-    'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8,
-    'J': 1, 'K': 2, 'L': 3, 'M': 4, 'N': 5, 'P': 7, 'R': 9,
-    'S': 2, 'T': 3, 'U': 4, 'V': 5, 'W': 6, 'X': 7, 'Y': 8, 'Z': 9,
-    '0': 0, '1': 1, '2': 2, '3': 3, '4': 4,
-    '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+    "A": 1,
+    "B": 2,
+    "C": 3,
+    "D": 4,
+    "E": 5,
+    "F": 6,
+    "G": 7,
+    "H": 8,
+    "J": 1,
+    "K": 2,
+    "L": 3,
+    "M": 4,
+    "N": 5,
+    "P": 7,
+    "R": 9,
+    "S": 2,
+    "T": 3,
+    "U": 4,
+    "V": 5,
+    "W": 6,
+    "X": 7,
+    "Y": 8,
+    "Z": 9,
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    "6": 6,
+    "7": 7,
+    "8": 8,
+    "9": 9,
 }
 
 # Position weights for VIN checksum calculation
@@ -52,7 +78,7 @@ def calculate_vin_checksum(vin: str) -> str | None:
     vin = vin.upper()
 
     # Check for invalid characters (I, O, Q not allowed in VINs)
-    if any(c in vin for c in 'IOQ'):
+    if any(c in vin for c in "IOQ"):
         return None
 
     total = 0
@@ -64,7 +90,7 @@ def calculate_vin_checksum(vin: str) -> str | None:
 
     remainder = total % 11
     if remainder == 10:
-        return 'X'
+        return "X"
     return str(remainder)
 
 
@@ -171,9 +197,10 @@ class VINDetector(Detector):
         scan_context = context.get_context(line_number)
 
         # Test files/functions get reduced severity
-        if scan_context.is_test_file or scan_context.is_in_test_function:
-            if base_severity > Severity.LOW:
-                return Severity(base_severity - 1)
+        if (
+            scan_context.is_test_file or scan_context.is_in_test_function
+        ) and base_severity > Severity.LOW:
+            return Severity(base_severity - 1)
 
         # Near LLM calls, elevate severity
         if scan_context.flows_to_llm_api and base_severity < Severity.CRITICAL:
@@ -207,10 +234,7 @@ class VINDetector(Detector):
             return True
 
         # Skip docstrings
-        if scan_context.is_in_docstring:
-            return True
-
-        return False
+        return bool(scan_context.is_in_docstring)
 
     def _create_violation(
         self,

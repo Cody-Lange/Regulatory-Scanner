@@ -103,18 +103,18 @@ class ContextAnalyzer:
             return
 
         for node in ast.walk(self._tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)):
-                if (
-                    node.body
-                    and isinstance(node.body[0], ast.Expr)
-                    and isinstance(node.body[0].value, ast.Constant)
-                    and isinstance(node.body[0].value.value, str)
-                ):
-                    docstring_node = node.body[0]
-                    start = docstring_node.lineno
-                    end = getattr(docstring_node, "end_lineno", start)
-                    for line in range(start, end + 1):
-                        self._docstring_lines.add(line)
+            if (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module))
+                and node.body
+                and isinstance(node.body[0], ast.Expr)
+                and isinstance(node.body[0].value, ast.Constant)
+                and isinstance(node.body[0].value.value, str)
+            ):
+                docstring_node = node.body[0]
+                start = docstring_node.lineno
+                end = getattr(docstring_node, "end_lineno", start)
+                for line in range(start, end + 1):
+                    self._docstring_lines.add(line)
 
     def _extract_comments(self) -> None:
         """Extract line numbers that contain only comments."""

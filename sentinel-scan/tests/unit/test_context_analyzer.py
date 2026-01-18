@@ -1,6 +1,5 @@
 """Unit tests for context analyzer."""
 
-
 from sentinel_scan.detection.context_analyzer import ContextAnalyzer
 
 

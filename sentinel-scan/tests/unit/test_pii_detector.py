@@ -38,7 +38,9 @@ class TestEmailDetection:
         assert len(violations) == 1
         assert violations[0].violation_type == "email"
         assert violations[0].detector == "pii"
-        assert "user@example.com" in violations[0].matched_text or "user" in violations[0].matched_text
+        assert (
+            "user@example.com" in violations[0].matched_text or "user" in violations[0].matched_text
+        )
 
     def test_detects_email_in_fstring(self, detector: PIIDetector) -> None:
         """Test detection of email in f-string."""
@@ -50,13 +52,13 @@ class TestEmailDetection:
 
     def test_detects_multiple_emails(self, detector: PIIDetector) -> None:
         """Test detection of multiple email addresses."""
-        source = '''
+        source = """
 emails = [
     "alice@example.com",
     "bob@company.org",
     "charlie@domain.net"
 ]
-'''
+"""
         violations = self._scan_source(detector, source)
         email_violations = [v for v in violations if v.violation_type == "email"]
 
@@ -64,10 +66,10 @@ emails = [
 
     def test_ignores_invalid_email_format(self, detector: PIIDetector) -> None:
         """Test that invalid email formats are not detected."""
-        source = '''
+        source = """
 not_email = "userexample.com"  # No @ symbol
 also_not = "@example.com"  # No local part
-'''
+"""
         violations = self._scan_source(detector, source)
         email_violations = [v for v in violations if v.violation_type == "email"]
 
@@ -160,10 +162,10 @@ class TestPhoneDetection:
 
     def test_ignores_invalid_phone(self, detector: PIIDetector) -> None:
         """Test that invalid phone formats are not detected."""
-        source = '''
+        source = """
 not_phone = "123-456"  # Too short
 also_not = "12345678901234"  # Too long
-'''
+"""
         violations = self._scan_source(detector, source)
         phone_violations = [v for v in violations if v.violation_type == "phone"]
 
@@ -211,11 +213,11 @@ class TestSSNDetection:
 
     def test_ignores_invalid_ssn_format(self, detector: PIIDetector) -> None:
         """Test that invalid SSN formats are not detected."""
-        source = '''
+        source = """
 not_ssn = "000-00-0000"  # All zeros invalid
 also_not = "123-00-6789"  # Middle zeros invalid
 invalid_area = "000-45-6789"  # Area number cannot be 000
-'''
+"""
         violations = self._scan_source(detector, source)
         ssn_violations = [v for v in violations if v.violation_type == "ssn"]
 
@@ -324,7 +326,11 @@ class TestAllowlistFiltering:
         return PIIDetector()
 
     def _scan_source(
-        self, detector: PIIDetector, source: str, file_path: str = "test.py", allowlist: list | None = None
+        self,
+        detector: PIIDetector,
+        source: str,
+        file_path: str = "test.py",
+        allowlist: list | None = None,
     ) -> list:
         """Helper to scan source code."""
         tree = ast.parse(source)
@@ -372,10 +378,10 @@ class TestContextAwareness:
 
     def test_lower_severity_in_test_function(self, detector: PIIDetector) -> None:
         """Test that violations in test functions have lower severity."""
-        source = '''
+        source = """
 def test_email():
     email = "test@example.com"
-'''
+"""
         violations = self._scan_source(detector, source, "tests/test_module.py")
 
         # In test functions, severity should be reduced
@@ -385,9 +391,9 @@ def test_email():
 
     def test_skips_comment_only_lines(self, detector: PIIDetector) -> None:
         """Test that comment-only lines are skipped."""
-        source = '''# Contact: admin@company.com
+        source = """# Contact: admin@company.com
 email = "actual@email.com"
-'''
+"""
         violations = self._scan_source(detector, source)
         email_violations = [v for v in violations if v.violation_type == "email"]
 
@@ -413,13 +419,13 @@ def process():
 
     def test_increases_severity_near_llm_call(self, detector: PIIDetector) -> None:
         """Test that violations near LLM API calls have higher severity."""
-        source = '''
+        source = """
 email = "user@company.com"
 response = openai.chat.completions.create(
     model="gpt-4",
     messages=[{"role": "user", "content": f"Contact {email}"}]
 )
-'''
+"""
         violations = self._scan_source(detector, source)
 
         # Near LLM calls, severity should be elevated
