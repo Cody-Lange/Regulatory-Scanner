@@ -4,29 +4,91 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Developer-native compliance scanning for LLM applications.** Catch data privacy violations before they cost millions.
+**Runtime PII protection for LLM applications.** Prevent sensitive data from being sent to third-party AI services.
 
-Sentinel Scan detects PII (emails, phone numbers, SSNs, credit cards), VINs, and other sensitive data in Python code before deployment. It integrates seamlessly into your IDE (VS Code) and CI/CD workflows to prevent compliance violations from reaching production.
+Sentinel Scan intercepts LLM API calls to detect and block PII (emails, SSNs, credit cards, phone numbers) before it leaves your infrastructure. One line of code protects your entire application from costly GDPR/CCPA violations.
+
+## Quick Start - Runtime Protection
+
+```python
+from sentinel_scan import protect_openai
+
+# Add this ONE LINE to protect all OpenAI calls
+protect_openai()
+
+# Now this will raise PIIDetectedError before sending to OpenAI
+client = openai.OpenAI()
+client.chat.completions.create(
+    messages=[{"role": "user", "content": "My SSN is 123-45-6789"}]
+)
+# PIIDetectedError: PII detected in LLM payload: ssn
+```
 
 ## Why Sentinel Scan?
 
+- **Block PII at runtime**: Intercept LLM API calls before data leaves your infrastructure
+- **One-line integration**: `protect_openai()` - that's it
+- **Supports major LLMs**: OpenAI, Anthropic, LangChain
 - **Prevent costly breaches**: GDPR fines can reach 4% of global revenue
-- **Shift left on compliance**: Catch issues in development, not production
-- **Developer-friendly**: Works in your IDE with real-time feedback
-- **Low false positives**: AST-based context analysis understands your code
-- **Regulatory mapping**: Know exactly which regulations apply (GDPR, CCPA, HIPAA, PCI-DSS)
+- **Low false positives**: Luhn validation for credit cards, checksum validation for VINs
 
-## Quick Start
+## Installation
 
 ```bash
-# Install the CLI
 pip install sentinel-scan
+```
 
-# Scan your code
+## Runtime Protection Options
+
+### Option 1: Auto-protect LLM Clients (Recommended)
+
+```python
+from sentinel_scan import protect_openai, protect_anthropic
+
+# Protect OpenAI
+protect_openai()
+
+# Protect Anthropic
+protect_anthropic()
+
+# Now ALL calls to these APIs are automatically scanned
+```
+
+### Option 2: Decorator for Custom Functions
+
+```python
+from sentinel_scan import scan_llm_input
+
+@scan_llm_input(block=True)
+def ask_ai(prompt: str) -> str:
+    return my_llm_client.generate(prompt)
+
+ask_ai("Process this: john.doe@company.com")
+# PIIDetectedError: PII detected in LLM payload: email
+```
+
+### Option 3: Manual Scanning
+
+```python
+from sentinel_scan import scan_payload, PIIDetectedError
+
+user_input = get_user_input()
+
+try:
+    scan_payload(user_input)
+    # Safe to send to LLM
+    response = llm.generate(user_input)
+except PIIDetectedError as e:
+    print(f"Blocked: {e.violations}")
+```
+
+## Static Code Analysis (Bonus)
+
+Sentinel Scan also includes static analysis for CI/CD pipelines:
+
+```bash
+# Scan source code for hardcoded PII
 sentinel-scan scan ./src
-
-# Initialize config with automotive template
-sentinel-scan init --template automotive
 
 # Install pre-commit hook
 sentinel-scan install-hook
