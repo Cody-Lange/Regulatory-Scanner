@@ -1,74 +1,69 @@
 # Active Context
 
 ## Current Status
-**Phase:** Phases 1-3 Complete - Ready for Phase 6 (Polish)
-**Date:** January 17, 2026
-**Sprint:** Phase 2-3 - CLI & VS Code Integration
+**Phase:** Phases 1-5 Complete - Ready for Phase 6 (Polish & Deploy)
+**Date:** January 18, 2026
+**Sprint:** Phase 4 - False Positive Management (COMPLETE)
 
 ---
 
 ## What We Completed This Session
 
-### CLI Tool (Phase 2) ✅
-1. ✅ Wired `scan` command to Scanner
-   - File and directory scanning functional
-   - Recursive scanning with --recursive flag
-   - Proper exit codes (0 = clean, 1 = violations, 2 = error)
+### Phase 4: Regex Pattern Allowlists ✅
+1. ✅ Created `allowlist.py` module
+   - `AllowlistMatcher` class for efficient pattern matching
+   - Support for literal substring patterns
+   - Support for regex patterns with `regex:` prefix
+   - LRU caching for compiled regex patterns
+   - Graceful handling of invalid regex
 
-2. ✅ Implemented all CLI options
-   - `--format json` - JSON output for CI/CD
-   - `--severity high` - Filter by minimum severity
-   - `--config sentinel.yaml` - Custom config file
-   - `--verbose` - Verbose output mode
-   - `--recursive` - Directory recursion control
+2. ✅ Updated all detectors
+   - PII detector uses `AllowlistMatcher`
+   - VIN detector uses `AllowlistMatcher` + preserves prefix matching
+   - Rules engine uses `AllowlistMatcher` for global/per-detector patterns
 
-3. ✅ Implemented `init` command
-   - Template selection with `--template`
-   - Support for default and automotive templates
-   - Force overwrite with `--force`
+3. ✅ Added comprehensive tests
+   - 22 new tests in `test_allowlist.py`
+   - 5 regex tests in `test_pii_detector.py`
+   - 4 regex tests in `test_vin_detector.py`
+   - Total: 157 tests passing
 
-4. ✅ Implemented `install-hook` command
-   - Pre-commit hook generation
-   - Pre-push hook support
-   - Automatic .git discovery
+4. ✅ Updated templates with regex examples
+   - `default.yaml` - documented pattern types, added regex examples
+   - `automotive.yaml` - added active regex patterns for auto-generated emails
 
-### VS Code Extension (Phase 3) ✅
-1. ✅ Implemented Python bridge
-   - New `bridge` CLI command for VS Code communication
-   - JSON protocol over stdin/stdout
-   - Persistent subprocess with connection management
-   - Scan requests and ping health checks
+### Previous Session Completions
 
-2. ✅ Updated scanner.ts
-   - Full subprocess management
-   - Async request/response handling
-   - Error handling and timeouts
-   - Proper resource cleanup
+#### CLI Tool (Phase 2) ✅
+- `scan` command with all options (--format, --severity, --config, --verbose, --recursive)
+- `init` command with template selection
+- `install-hook` command for git hooks
+- `bridge` command for VS Code communication
 
-3. ✅ Integrated diagnostics with real scanner
-   - Real-time violation detection
-   - Proper severity mapping to VS Code diagnostics
-   - Debounced scanning on document changes
+#### VS Code Extension (Phase 3) ✅
+- Python bridge via subprocess
+- Real-time diagnostics with debouncing
+- Status bar integration
 
-### Industry Templates (Phase 5) ✅
-1. ✅ Created automotive template
-   - VIN detection as critical
-   - Dealer codes, customer IDs, service records
-   - License plate and driver's license patterns
-   - DPPA, GLBA, FCRA regulation references
-   - Automotive-specific allowlists
+#### Industry Templates (Phase 5) ✅
+- Default template with comprehensive PII detection
+- Automotive template with VIN, dealer codes, customer IDs
 
 ---
 
-## Key Files Modified/Created
+## Key Files Modified/Created This Session
 
 | File | Purpose |
 |------|---------|
-| `sentinel_scan/cli.py` | Full CLI implementation |
-| `sentinel_scan/templates/automotive.yaml` | Automotive industry template |
-| `sentinel-scan-vscode/src/scanner.ts` | Python bridge via subprocess |
-| `sentinel-scan-vscode/src/diagnostics.ts` | Resource cleanup |
-| `context/memory-bank/progress.md` | Updated progress tracker |
+| `sentinel_scan/allowlist.py` | **NEW** - Regex + literal pattern matching |
+| `sentinel_scan/detection/pii_detector.py` | Uses AllowlistMatcher |
+| `sentinel_scan/detection/vin_detector.py` | Uses AllowlistMatcher + prefix matching |
+| `sentinel_scan/rules/engine.py` | Uses AllowlistMatcher for filtering |
+| `sentinel_scan/templates/default.yaml` | Added regex pattern documentation |
+| `sentinel_scan/templates/automotive.yaml` | Added active regex patterns |
+| `tests/unit/test_allowlist.py` | **NEW** - 22 comprehensive tests |
+| `tests/unit/test_pii_detector.py` | Added 5 regex allowlist tests |
+| `tests/unit/test_vin_detector.py` | Added 4 regex allowlist tests |
 
 ---
 
@@ -122,21 +117,31 @@ pytest tests/ --cov=sentinel_scan --cov-report=term-missing
 
 ---
 
-## Next Immediate Actions (Phase 6)
+## Next Immediate Actions (Phase 6 - Polish & Deploy)
 
-1. **Documentation**
+1. **Documentation** (0.5 day)
    - README.md with quick start guide
-   - Configuration reference
+   - Configuration reference with regex pattern examples
    - API documentation
 
-2. **Distribution**
-   - PyPI package publication
+2. **Distribution** (1 day)
+   - PyPI package publication (`pip install sentinel-scan`)
    - VS Code Marketplace publication
+   - Compile TypeScript to JavaScript
 
-3. **Final Testing**
+3. **Final Testing** (1 day)
    - E2E tests with real Python projects
    - Performance benchmarks
    - Design partner validation
+
+### Regex Allowlist Usage
+```yaml
+# In sentinel_scan.yaml
+allowlist:
+  - "example.com"              # Literal: substring match
+  - "regex:^noreply@"          # Regex: emails starting with noreply@
+  - "regex:@(test|example)\\." # Regex: test domain emails
+```
 
 ---
 
@@ -169,9 +174,9 @@ VS Code Extension                    Python Backend
 
 ### For Next Session
 1. Focus on Phase 6: Polish & Deploy
-2. Create comprehensive README
+2. Create comprehensive README with regex pattern documentation
 3. Prepare PyPI distribution
-4. Build VS Code extension package
+4. Build VS Code extension package (compile TypeScript)
 5. Run final E2E tests
 
 ### Architecture Decisions Made
@@ -179,7 +184,22 @@ VS Code Extension                    Python Backend
 - One bridge process per VS Code instance
 - Request timeout of 30 seconds
 - Debounce delay of 300ms for real-time scanning
+- **Allowlist patterns**: `regex:` prefix for regex, otherwise literal substring match
+- **AllowlistMatcher class**: Separates literal and regex patterns for performance
+
+### Key Implementation: Regex Allowlists
+```python
+from sentinel_scan.allowlist import AllowlistMatcher
+
+matcher = AllowlistMatcher([
+    "example.com",           # Literal match
+    "regex:^test_.*@",       # Regex match
+])
+
+matcher.is_allowlisted("user@example.com")  # True (literal)
+matcher.is_allowlisted("test_bot@foo.com")  # True (regex)
+```
 
 ---
 
-*Last updated: January 17, 2026*
+*Last updated: January 18, 2026*

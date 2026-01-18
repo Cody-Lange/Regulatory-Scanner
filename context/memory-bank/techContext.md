@@ -71,6 +71,8 @@
 3. **YAML configuration** for human-readable, version-controllable config
 4. **Rich library** for beautiful console output
 5. **No telemetry** in MVP (privacy-first approach)
+6. **Regex allowlists** - `regex:` prefix for pattern matching, literal otherwise
+7. **AllowlistMatcher class** - separates literal/regex patterns for performance
 
 ---
 
