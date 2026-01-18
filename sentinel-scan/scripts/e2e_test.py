@@ -63,6 +63,22 @@ class E2ETestRunner:
             self.errors.append(f"{test_name}: {details}")
             return False
 
+    def assert_exit_code(
+        self, actual: int, expected: int, test_name: str, stderr: str = ""
+    ) -> bool:
+        """Assert exit code with helpful debug info."""
+        if actual == expected:
+            print(f"  ✓ {test_name}")
+            self.passed += 1
+            return True
+        else:
+            print(f"  ✗ {test_name} (got {actual}, expected {expected})")
+            if stderr.strip():
+                print(f"    stderr: {stderr.strip()[:200]}")
+            self.failed += 1
+            self.errors.append(f"{test_name}: got {actual}, expected {expected}")
+            return False
+
     def test_version(self) -> None:
         """Test --version flag."""
         print("\n[Test: Version]")
@@ -96,9 +112,11 @@ if __name__ == "__main__":
         )
 
         code, stdout, stderr = self.run_command(["scan", "clean.py"])
-        self.assert_true(code == 0, "Exit code is 0 (no violations)")
+        # Combine stdout and stderr (Rich may output to either)
+        output = stdout + stderr
+        self.assert_exit_code(code, 0, "Exit code is 0 (no violations)", stderr)
         self.assert_true(
-            "No violations" in stdout or "0 violation" in stdout or "No compliance" in stdout,
+            "No violations" in output or "0 violation" in output or "No compliance" in output,
             "Reports no violations",
         )
 
@@ -117,10 +135,12 @@ ssn = "123-45-6789"
         )
 
         code, stdout, stderr = self.run_command(["scan", "violations.py"])
+        # Combine stdout and stderr for checking (Rich may output to either)
+        output = (stdout + stderr).lower()
         self.assert_true(code == 1, "Exit code is 1 (violations found)")
-        self.assert_true("email" in stdout.lower(), "Email violation detected")
-        self.assert_true("phone" in stdout.lower(), "Phone violation detected")
-        self.assert_true("ssn" in stdout.lower(), "SSN violation detected")
+        self.assert_true("email" in output, "Email violation detected")
+        self.assert_true("phone" in output, "Phone violation detected")
+        self.assert_true("ssn" in output, "SSN violation detected")
 
     def test_scan_json_output(self) -> None:
         """Test JSON output format."""
@@ -188,11 +208,10 @@ ssn = "123-45-6789"      # CRITICAL
         """Test init command with default template."""
         print("\n[Test: Init Default]")
         config_path = self.temp_dir / "sentinel_scan.yaml"
-        if config_path.exists():
-            config_path.unlink()
 
-        code, stdout, stderr = self.run_command(["init"])
-        self.assert_true(code == 0, "Exit code is 0")
+        # Use --force to overwrite if exists
+        code, stdout, stderr = self.run_command(["init", "--force"])
+        self.assert_exit_code(code, 0, "Exit code is 0", stderr)
         self.assert_true(config_path.exists(), "Config file created")
 
         if config_path.exists():
@@ -204,11 +223,10 @@ ssn = "123-45-6789"      # CRITICAL
         """Test init command with automotive template."""
         print("\n[Test: Init Automotive Template]")
         config_path = self.temp_dir / "sentinel_scan.yaml"
-        if config_path.exists():
-            config_path.unlink()
 
-        code, stdout, stderr = self.run_command(["init", "--template", "automotive"])
-        self.assert_true(code == 0, "Exit code is 0")
+        # Use --force to overwrite if exists
+        code, stdout, stderr = self.run_command(["init", "--template", "automotive", "--force"])
+        self.assert_exit_code(code, 0, "Exit code is 0", stderr)
         self.assert_true(config_path.exists(), "Config file created")
 
         if config_path.exists():
