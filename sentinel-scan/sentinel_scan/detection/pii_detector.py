@@ -123,10 +123,7 @@ class PIIDetector(Detector):
         Returns:
             True if allowlisted, False otherwise
         """
-        for pattern in self._allowlist:
-            if pattern in text:
-                return True
-        return False
+        return any(pattern in text for pattern in self._allowlist)
 
     def _adjust_severity(
         self,
@@ -147,9 +144,8 @@ class PIIDetector(Detector):
         scan_context = context.get_context(line_number)
 
         # Test files/functions get reduced severity
-        if scan_context.is_test_file or scan_context.is_in_test_function:
-            if base_severity > Severity.LOW:
-                return Severity(base_severity - 1)
+        if (scan_context.is_test_file or scan_context.is_in_test_function) and base_severity > Severity.LOW:
+            return Severity(base_severity - 1)
 
         # Near LLM calls, elevate severity
         if scan_context.flows_to_llm_api and base_severity < Severity.CRITICAL:
@@ -184,10 +180,7 @@ class PIIDetector(Detector):
             return True
 
         # Skip docstrings
-        if scan_context.is_in_docstring:
-            return True
-
-        return False
+        return bool(scan_context.is_in_docstring)
 
     def _create_violation(
         self,

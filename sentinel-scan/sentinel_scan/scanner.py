@@ -336,8 +336,6 @@ def _matches_pattern(path: str, pattern: str) -> bool:
 
             if start and not path.startswith(start.replace("*", "")):
                 return False
-            if end and not fnmatch.fnmatch(path, f"*{end}"):
-                return False
-            return True
+            return not (end and not fnmatch.fnmatch(path, f"*{end}"))
 
     return fnmatch.fnmatch(path, pattern)

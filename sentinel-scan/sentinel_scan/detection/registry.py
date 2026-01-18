@@ -5,7 +5,7 @@ allowing dynamic registration and instantiation of detectors.
 """
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
     from sentinel_scan.detection.base import Detector
@@ -25,7 +25,7 @@ class DetectorRegistry:
         detectors = DetectorRegistry.create_all(config)
     """
 
-    _detectors: dict[str, type["Detector"]] = {}
+    _detectors: ClassVar[dict[str, type["Detector"]]] = {}
 
     @classmethod
     def register(cls, name: str) -> Callable[[type["Detector"]], type["Detector"]]:

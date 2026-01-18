@@ -40,10 +40,7 @@ class RuleEngine:
         Returns:
             True if the file should be excluded
         """
-        for pattern in self.exclusion_paths:
-            if fnmatch.fnmatch(file_path, pattern):
-                return True
-        return False
+        return any(fnmatch.fnmatch(file_path, pattern) for pattern in self.exclusion_paths)
 
     def is_allowlisted(self, matched_text: str, detector: str) -> bool:
         """Check if matched text is in the allowlist.
@@ -64,11 +61,7 @@ class RuleEngine:
         detector_config = self.config.get("detectors", {}).get(detector, {})
         detector_allowlist = detector_config.get("allowlist", [])
 
-        for pattern in detector_allowlist:
-            if pattern in matched_text:
-                return True
-
-        return False
+        return any(pattern in matched_text for pattern in detector_allowlist)
 
     def adjust_severity(self, violation: Violation, is_test: bool, flows_to_llm: bool) -> Severity:
         """Adjust violation severity based on context.
