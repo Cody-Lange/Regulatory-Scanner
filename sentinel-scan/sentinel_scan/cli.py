@@ -142,7 +142,7 @@ def scan(
             result = scan_directory(path, recursive=recursive, config=cfg)
     except Exception as e:
         console.print(f"[red]Error during scan: {e}[/red]")
-        raise typer.Exit(code=2)
+        raise typer.Exit(code=2) from e
 
     # Handle errors
     if result.errors and verbose:
@@ -222,7 +222,7 @@ def init(
         console.print("\nEdit the file to customize settings for your project.")
     except Exception as e:
         console.print(f"[red]Error creating config file: {e}[/red]")
-        raise typer.Exit(code=2)
+        raise typer.Exit(code=2) from e
 
 
 @app.command(name="install-hook")
@@ -310,7 +310,7 @@ exit 0
         console.print("\nThe hook will automatically scan Python files before each commit.")
     except Exception as e:
         console.print(f"[red]Error installing hook: {e}[/red]")
-        raise typer.Exit(code=2)
+        raise typer.Exit(code=2) from e
 
 
 @app.command(name="bridge")
