@@ -63,7 +63,9 @@ class E2ETestRunner:
             self.errors.append(f"{test_name}: {details}")
             return False
 
-    def assert_exit_code(self, actual: int, expected: int, test_name: str) -> bool:
+    def assert_exit_code(
+        self, actual: int, expected: int, test_name: str, stderr: str = ""
+    ) -> bool:
         """Assert exit code with helpful debug info."""
         if actual == expected:
             print(f"  ✓ {test_name}")
@@ -71,6 +73,8 @@ class E2ETestRunner:
             return True
         else:
             print(f"  ✗ {test_name} (got {actual}, expected {expected})")
+            if stderr.strip():
+                print(f"    stderr: {stderr.strip()[:200]}")
             self.failed += 1
             self.errors.append(f"{test_name}: got {actual}, expected {expected}")
             return False
@@ -110,7 +114,7 @@ if __name__ == "__main__":
         code, stdout, stderr = self.run_command(["scan", "clean.py"])
         # Combine stdout and stderr (Rich may output to either)
         output = stdout + stderr
-        self.assert_exit_code(code, 0, "Exit code is 0 (no violations)")
+        self.assert_exit_code(code, 0, "Exit code is 0 (no violations)", stderr)
         self.assert_true(
             "No violations" in output or "0 violation" in output or "No compliance" in output,
             "Reports no violations",
@@ -207,7 +211,7 @@ ssn = "123-45-6789"      # CRITICAL
 
         # Use --force to overwrite if exists
         code, stdout, stderr = self.run_command(["init", "--force"])
-        self.assert_exit_code(code, 0, "Exit code is 0")
+        self.assert_exit_code(code, 0, "Exit code is 0", stderr)
         self.assert_true(config_path.exists(), "Config file created")
 
         if config_path.exists():
@@ -222,7 +226,7 @@ ssn = "123-45-6789"      # CRITICAL
 
         # Use --force to overwrite if exists
         code, stdout, stderr = self.run_command(["init", "--template", "automotive", "--force"])
-        self.assert_exit_code(code, 0, "Exit code is 0")
+        self.assert_exit_code(code, 0, "Exit code is 0", stderr)
         self.assert_true(config_path.exists(), "Config file created")
 
         if config_path.exists():
